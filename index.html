@@ -41,13 +41,14 @@
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
-      padding: 0 20px;
-      height: 56px;
+      padding: 0 18px;
+      height: 50px;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       z-index: 1000;
       flex-shrink: 0;
+      position: relative;
     }
 
     .brand {
@@ -397,113 +398,156 @@
     .lang-btn:hover { opacity: 0.8; }
     .lang-btn.active { opacity: 1; border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); }
 
-    /* ── FILTER BAR ──────────────────────────────────────────────────── */
-    #filter-bar {
-      display: none;
-      background: rgba(255,255,255,0.02);
+    /* ── FILTER PANEL (Apple-style collapsible) ─────────────────────── */
+    #filter-panel {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: rgba(12,12,12,0.97);
+      backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
-      padding: 12px 20px 14px;
-      flex-shrink: 0;
-      z-index: 900;
+      padding: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s cubic-bezier(.4,0,.2,1), padding 0.3s;
+      z-index: 999;
     }
-    #filter-bar.open { display: block; }
+    #filter-panel.open {
+      max-height: 300px;
+      padding: 16px 20px 20px;
+    }
 
-    .filter-bar-top {
+    .filter-panel-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 10px;
+      margin-bottom: 16px;
     }
-    .filter-bar-title {
-      font-size: 0.7rem;
-      color: var(--text-tertiary);
+    .filter-panel-title {
+      font-size: 0.78rem;
       font-weight: 600;
+      color: var(--text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
-    #clear-filters-btn {
-      display: none;
+    .filter-panel-clear {
       background: none;
-      border: 1px solid rgba(52,211,153,0.3);
-      border-radius: 7px;
+      border: none;
       color: var(--accent);
-      font-size: 0.72rem;
-      font-weight: 500;
-      padding: 3px 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
       cursor: pointer;
       font-family: inherit;
-      transition: all 0.15s;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: background 0.15s;
+      display: none;
     }
-    #clear-filters-btn:hover { background: var(--accent-dim); }
-    #clear-filters-btn.visible { display: block; }
+    .filter-panel-clear.visible { display: block; }
+    .filter-panel-clear:hover { background: var(--accent-dim); }
 
-    .filter-section {
+    /* Segmented control style (Apple-like) */
+    .filter-group {
+      margin-bottom: 14px;
+    }
+    .filter-group:last-child { margin-bottom: 0; }
+    .filter-group-label {
+      font-size: 0.7rem;
+      color: var(--text-tertiary);
+      font-weight: 600;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .segment-control {
+      display: inline-flex;
+      background: rgba(255,255,255,0.04);
+      border-radius: 10px;
+      padding: 3px;
+      gap: 2px;
+    }
+    .segment-btn {
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      font-size: 0.78rem;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.18s;
+      white-space: nowrap;
+    }
+    .segment-btn:hover { color: var(--text-secondary); }
+    .segment-btn.active {
+      background: var(--accent);
+      color: #000;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(52,211,153,0.25);
+    }
+
+    /* Toggle switches for Lunch/Rated */
+    .filter-toggles {
       display: flex;
+      gap: 16px;
       align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
     }
-    .filter-section + .filter-section {
-      margin-top: 10px;
-    }
-
-    .filter-row {
+    .filter-toggle-item {
       display: flex;
       align-items: center;
       gap: 8px;
-      flex-wrap: wrap;
-    }
-    .filter-row + .filter-row {
-      margin-top: 8px;
-    }
-
-    .filter-label {
-      font-size: 0.7rem;
-      color: var(--text-secondary);
-      white-space: nowrap;
-      font-weight: 600;
-      letter-spacing: 0.1px;
-      min-width: 50px;
-    }
-
-    .filter-pills {
-      display: flex;
-      gap: 5px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .filter-sep {
-      width: 1px;
-      height: 18px;
-      background: var(--border);
-      margin: 0 4px;
-      flex-shrink: 0;
-    }
-
-    .pill {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      color: var(--text-secondary);
-      padding: 6px 15px;
-      font-size: 0.78rem;
-      font-weight: 500;
       cursor: pointer;
-      transition: all 0.18s;
-      font-family: inherit;
-      white-space: nowrap;
-      letter-spacing: 0.1px;
     }
-    .pill:hover {
-      border-color: rgba(255,255,255,0.2);
-      color: var(--text);
-      background: var(--surface-hover);
+    .filter-toggle-label {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      font-weight: 500;
     }
-    .pill.active {
-      background: var(--accent-dim);
-      border-color: var(--accent);
+    .toggle-switch {
+      width: 36px;
+      height: 20px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      position: relative;
+      transition: background 0.2s;
+      cursor: pointer;
+      border: none;
+      padding: 0;
+    }
+    .toggle-switch.on {
+      background: var(--accent);
+    }
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      background: white;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.2s;
+    }
+    .toggle-switch.on::after {
+      transform: translateX(16px);
+    }
+
+    /* Results counter in filter panel */
+    .filter-results {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      font-size: 0.78rem;
+      color: var(--text-tertiary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .filter-results strong {
       color: var(--accent);
+      font-weight: 700;
     }
 
     /* ── WELCOME MODAL ────────────────────────────────────────────────── */
@@ -1474,7 +1518,7 @@
     /* ── COURSES VIEW CONTROLS ────────────────────────────────────────── */
     .karta-only { /* elements hidden on non-courses tabs */ }
     body.tab-live .karta-only { display: none !important; }
-    body.tab-live #filter-bar { display: none !important; }
+    body.tab-live #filter-panel { max-height: 0 !important; padding: 0 !important; }
     body.tab-live #mobile-view-toggle { display: none !important; }
 
     /* ── MOBILE VIEW TOGGLE ──────────────────────────────────────────── */
@@ -1546,16 +1590,11 @@
       #locate-btn svg { display: none; }
       #locate-btn { font-size: 0.7rem; }
 
-      /* ── FILTER BAR ─────────────────────────────────── */
-      #filter-bar {
-        padding: 8px 12px 10px;
-      }
-      #filter-bar.open { display: none; }
-      body.mobile-filters-open #filter-bar.open { display: block; }
-      .filter-bar-top { margin-bottom: 8px; }
-      .filter-label { font-size: 0.68rem; min-width: 42px; }
-      .pill { padding: 5px 11px; font-size: 0.72rem; }
-      .filter-section + .filter-section { margin-top: 8px; }
+      /* ── FILTER PANEL (mobile) ─────────────────────── */
+      #filter-panel.open { padding: 12px 14px 14px; }
+      .segment-btn { font-size: 0.72rem; padding: 5px 10px; }
+      .filter-group-label { font-size: 0.65rem; }
+      .filter-toggle-label { font-size: 0.72rem; }
 
       /* ── MOBILE MAP/LIST LAYOUT ─────────────────────── */
       .main {
@@ -1639,7 +1678,7 @@
     @media (max-width: 380px) {
       .nav-tab { font-size: 0.68rem; padding: 4px 8px; }
       .brand h1 { font-size: 0.78rem; }
-      .pill { padding: 4px 9px; font-size: 0.68rem; }
+      .segment-btn { padding: 4px 8px; font-size: 0.66rem; }
       .card-action-btn { padding: 4px 6px; font-size: 0.68rem; }
 
       /* Also hide R2 on very small screens */
@@ -1654,10 +1693,10 @@
     body.tab-news .karta-only,
     body.tab-shop .karta-only,
     body.tab-trips .karta-only { display: none !important; }
-    body.tab-live #filter-bar,
-    body.tab-news #filter-bar,
-    body.tab-shop #filter-bar,
-    body.tab-trips #filter-bar { display: none !important; }
+    body.tab-live #filter-panel,
+    body.tab-news #filter-panel,
+    body.tab-shop #filter-panel,
+    body.tab-trips #filter-panel { max-height: 0 !important; padding: 0 !important; }
     body.tab-live #mobile-view-toggle,
     body.tab-news #mobile-view-toggle,
     body.tab-shop #mobile-view-toggle,
@@ -2086,6 +2125,90 @@
     .user-dropdown-item { display: block; width: 100%; background: none; border: none; color: var(--text-secondary); padding: 8px 12px; font-size: 0.8rem; text-align: left; cursor: pointer; border-radius: 6px; font-family: inherit; transition: all 0.15s; }
     .user-dropdown-item:hover { background: var(--surface-hover); color: var(--text); }
 
+    /* ── QUIZ OVERLAY ──────────────────────────────────────────────── */
+    #quiz-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(20px);
+      z-index: 2800;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    #quiz-overlay.open { display: flex; }
+    #quiz-modal {
+      max-width: 520px;
+      width: 92%;
+      text-align: center;
+      padding: 10px;
+    }
+    .quiz-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .quiz-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-bottom: 28px;
+    }
+    .quiz-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .quiz-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px 16px 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      font-family: inherit;
+      text-align: center;
+    }
+    .quiz-card:hover {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(52,211,153,0.15);
+    }
+    .quiz-icon { font-size: 2rem; }
+    .quiz-label {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .quiz-desc {
+      font-size: 0.72rem;
+      color: var(--text-tertiary);
+      line-height: 1.4;
+    }
+    .quiz-skip {
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-family: inherit;
+      padding: 8px 16px;
+      transition: color 0.15s;
+    }
+    .quiz-skip:hover { color: var(--text-secondary); }
+
+    @media (max-width: 768px) {
+      .quiz-options { grid-template-columns: 1fr; gap: 10px; }
+      .quiz-card { padding: 18px 14px 16px; flex-direction: row; text-align: left; gap: 12px; }
+      .quiz-icon { font-size: 1.5rem; flex-shrink: 0; }
+      .quiz-label { font-size: 0.85rem; }
+    }
+
   </style>
 </head>
 <body>
@@ -2102,6 +2225,37 @@
       Content may vary from time to time during my AI vibe coding journey.
     </div>
     <button id="welcome-enter">Explore Golf Clubs</button>
+  </div>
+</div>
+
+<!-- Quiz overlay (shown after welcome) -->
+<div id="quiz-overlay">
+  <div id="quiz-modal">
+    <h2 class="quiz-title">What brings you here?</h2>
+    <p class="quiz-subtitle">Pick what you're interested in</p>
+    <div class="quiz-options">
+      <button class="quiz-card" data-target="courses">
+        <span class="quiz-icon">🗺</span>
+        <span class="quiz-label">Find Courses</span>
+        <span class="quiz-desc">Explore 1,700+ golf clubs in Sweden, Denmark & Spain</span>
+      </button>
+      <button class="quiz-card" data-target="live">
+        <span class="quiz-icon">🏆</span>
+        <span class="quiz-label">Live Tournament</span>
+        <span class="quiz-desc">Follow the leaderboard and chat with other fans</span>
+      </button>
+      <button class="quiz-card" data-target="shop">
+        <span class="quiz-icon">🛒</span>
+        <span class="quiz-label">Golf Gear</span>
+        <span class="quiz-desc">Browse curated clubs, clothing & accessories</span>
+      </button>
+      <button class="quiz-card" data-target="trips">
+        <span class="quiz-icon">🧳</span>
+        <span class="quiz-label">Plan a Trip</span>
+        <span class="quiz-desc">Save courses and plan your next golf getaway</span>
+      </button>
+    </div>
+    <button class="quiz-skip">Just explore →</button>
   </div>
 </div>
 
@@ -2194,40 +2348,51 @@
   </div>
 
   <div id="status" class="loading karta-only" data-i18n="loading">Laddar…</div>
-</header>
 
-<!-- Filter bar (collapsible) -->
-<div id="filter-bar" class="open">
-  <div class="filter-bar-top">
-    <span class="filter-bar-title" data-i18n="filter_clubs">Filtrera klubbar</span>
-    <button id="clear-filters-btn" data-i18n="clear_filters">✕ Rensa filter</button>
-  </div>
-  <div class="filter-section">
-    <span class="filter-label" data-i18n="country">Land</span>
-    <div class="filter-pills" id="country-filters">
-      <button class="pill active" data-country="all" data-i18n="all">Alla</button>
-      <button class="pill" data-country="SE">🇸🇪 Sverige</button>
-      <button class="pill" data-country="DK">🇩🇰 Danmark</button>
-      <button class="pill" data-country="ES">🇪🇸 Spanien</button>
+  <!-- Filter panel (Apple-style collapsible, inside header for absolute positioning) -->
+  <div id="filter-panel">
+    <div class="filter-panel-header">
+      <span class="filter-panel-title" data-i18n="filter_clubs">Filter clubs</span>
+      <button class="filter-panel-clear" id="clear-filters-btn" data-i18n="clear_filters">✕ Clear filters</button>
+    </div>
+    <div class="filter-group">
+      <div class="filter-group-label" data-i18n="country">Country</div>
+      <div class="segment-control" id="country-filters">
+        <button class="segment-btn active" data-country="all" data-i18n="all">All</button>
+        <button class="segment-btn" data-country="SE">🇸🇪 Sverige</button>
+        <button class="segment-btn" data-country="DK">🇩🇰 Danmark</button>
+        <button class="segment-btn" data-country="ES">🇪🇸 Spain</button>
+      </div>
+    </div>
+    <div class="filter-group">
+      <div class="filter-group-label" data-i18n="course_type">Course type</div>
+      <div class="segment-control" id="type-filters">
+        <button class="segment-btn active" data-type="all" data-i18n="all">All</button>
+        <button class="segment-btn" data-type="park" data-i18n="park">🌳 Park</button>
+        <button class="segment-btn" data-type="kust" data-i18n="coast">🌊 Coastal</button>
+        <button class="segment-btn" data-type="skog" data-i18n="forest">🌲 Forest</button>
+        <button class="segment-btn" data-type="links" data-i18n="links">🌾 Links</button>
+        <button class="segment-btn" data-type="berg" data-i18n="mountain">⛰ Mountain</button>
+      </div>
+    </div>
+    <div class="filter-group">
+      <div class="filter-toggles">
+        <div class="filter-toggle-item" id="lunch-toggle-wrap">
+          <button class="toggle-switch" id="lunch-toggle"></button>
+          <span class="filter-toggle-label" data-i18n="lunch">🍽 Lunch</span>
+        </div>
+        <div class="filter-toggle-item" id="rated-toggle-wrap">
+          <button class="toggle-switch" id="rated-toggle"></button>
+          <span class="filter-toggle-label" data-i18n="rated">⭐ Rated</span>
+        </div>
+      </div>
+    </div>
+    <div class="filter-results">
+      <span><strong id="filter-count">0</strong> <span data-i18n="clubs">clubs</span></span>
+      <span data-i18n="showing">Showing</span>
     </div>
   </div>
-  <div class="filter-section">
-    <span class="filter-label" data-i18n="course_type">Bantyp</span>
-    <div class="filter-pills" id="type-filters">
-      <button class="pill active" data-type="all" data-i18n="all">Alla</button>
-      <button class="pill" data-type="park" data-i18n="park">🌳 Park</button>
-      <button class="pill" data-type="kust" data-i18n="coast">🌊 Kust</button>
-      <button class="pill" data-type="skog" data-i18n="forest">🌲 Skog</button>
-      <button class="pill" data-type="links" data-i18n="links">🌾 Links</button>
-      <button class="pill" data-type="berg" data-i18n="mountain">⛰ Berg</button>
-    </div>
-    <div class="filter-sep"></div>
-    <div class="filter-pills">
-      <button class="pill" id="lunch-toggle" data-i18n="lunch">🍽 Lunch</button>
-      <button class="pill" id="rated-toggle" data-i18n="rated">⭐ Recenserade</button>
-    </div>
-  </div>
-</div>
+</header>
 
 <!-- Rankings modal -->
 <div id="rankings-overlay">
@@ -2820,17 +2985,53 @@ if (currentLang !== 'sv') {
   window._pendingLangApply = true;
 }
 
-// ── Welcome popup ─────────────────────────────────────────────────────────
+// ── Welcome popup + Quiz ──────────────────────────────────────────────────
 (function() {
   const overlay = document.getElementById('welcome-overlay');
+  const quizOverlay = document.getElementById('quiz-overlay');
   if (!overlay) return;
-  const dismiss = () => {
+
+  // If already visited, skip both welcome and quiz
+  if (localStorage.getItem('golfrabbit_welcomed')) {
+    overlay.remove();
+    if (quizOverlay) quizOverlay.remove();
+    return;
+  }
+
+  const dismissWelcome = () => {
     overlay.style.transition = 'opacity 0.3s ease';
     overlay.style.opacity = '0';
-    setTimeout(() => overlay.remove(), 300);
+    setTimeout(() => {
+      overlay.remove();
+      // Show the quiz after welcome fades out
+      if (quizOverlay) quizOverlay.classList.add('open');
+    }, 300);
   };
-  document.getElementById('welcome-enter').addEventListener('click', dismiss);
-  overlay.addEventListener('click', e => { if (e.target === overlay) dismiss(); });
+
+  const dismissQuiz = (target) => {
+    localStorage.setItem('golfrabbit_welcomed', '1');
+    if (quizOverlay) {
+      quizOverlay.style.transition = 'opacity 0.25s ease';
+      quizOverlay.style.opacity = '0';
+      setTimeout(() => {
+        quizOverlay.remove();
+        if (target && target !== 'courses') {
+          switchTab(target);
+        }
+      }, 250);
+    }
+  };
+
+  document.getElementById('welcome-enter').addEventListener('click', dismissWelcome);
+  overlay.addEventListener('click', e => { if (e.target === overlay) dismissWelcome(); });
+
+  // Quiz card clicks
+  if (quizOverlay) {
+    quizOverlay.querySelectorAll('.quiz-card').forEach(card => {
+      card.addEventListener('click', () => dismissQuiz(card.dataset.target));
+    });
+    quizOverlay.querySelector('.quiz-skip').addEventListener('click', () => dismissQuiz(null));
+  }
 })();
 
 // ── Map ────────────────────────────────────────────────────────────────────
@@ -2880,7 +3081,7 @@ let activeCountry = 'all';
 let showLunchOnly = false;
 let showRatedOnly = false;
 let activeCard = null;
-let filterBarOpen = true;
+let filterBarOpen = false;
 let savedTrips = JSON.parse(localStorage.getItem('golf_saved_trips') || '[]');
 
 // ── Cache & fetch ──────────────────────────────────────────────────────────
@@ -3142,8 +3343,13 @@ function render() {
   const hasActiveFilters = activeCount > 0;
   const ftBtn = document.getElementById('filter-toggle');
   ftBtn.classList.toggle('has-active', hasActiveFilters);
-  ftBtn.innerHTML = `${t('filter')}${activeCount > 0 ? ` <span style="background:var(--accent);color:#000;border-radius:10px;padding:1px 6px;font-size:0.7rem;font-weight:700;margin-left:2px">${activeCount}</span>` : ''}<span class="filter-dot"></span>`;
+  ftBtn.innerHTML = hasActiveFilters
+    ? `⚙ ${t('filter')} <span style="color:var(--accent);font-weight:700">· ${activeCount}</span><span class="filter-dot"></span>`
+    : `⚙ ${t('filter')}<span class="filter-dot"></span>`;
   document.getElementById('clear-filters-btn').classList.toggle('visible', hasActiveFilters);
+  // Update filter panel count
+  const filterCountEl = document.getElementById('filter-count');
+  if (filterCountEl) filterCountEl.textContent = filtered.length;
 }
 
 // ── Smart website URL generator for Swedish golf clubs ────────────────────
@@ -3313,34 +3519,38 @@ document.getElementById('search').addEventListener('input', function() {
 });
 
 document.getElementById('type-filters').addEventListener('click', e => {
-  const btn = e.target.closest('.pill');
+  const btn = e.target.closest('.segment-btn');
   if (!btn) return;
-  document.querySelectorAll('#type-filters .pill').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#type-filters .segment-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   activeCourseType = btn.dataset.type;
   render();
+  if (window.innerWidth <= 768) closeFilterPanel();
 });
 
-document.getElementById('lunch-toggle').addEventListener('click', function() {
+document.getElementById('lunch-toggle-wrap').addEventListener('click', function() {
   showLunchOnly = !showLunchOnly;
-  this.classList.toggle('active', showLunchOnly);
+  document.getElementById('lunch-toggle').classList.toggle('on', showLunchOnly);
   render();
+  if (window.innerWidth <= 768) closeFilterPanel();
 });
 
-document.getElementById('rated-toggle').addEventListener('click', function() {
+document.getElementById('rated-toggle-wrap').addEventListener('click', function() {
   showRatedOnly = !showRatedOnly;
-  this.classList.toggle('active', showRatedOnly);
+  document.getElementById('rated-toggle').classList.toggle('on', showRatedOnly);
   render();
+  if (window.innerWidth <= 768) closeFilterPanel();
 });
 
 // Country filter
 document.getElementById('country-filters').addEventListener('click', e => {
-  const btn = e.target.closest('.pill');
+  const btn = e.target.closest('.segment-btn');
   if (!btn) return;
-  document.querySelectorAll('#country-filters .pill').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#country-filters .segment-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   activeCountry = btn.dataset.country;
   render();
+  if (window.innerWidth <= 768) closeFilterPanel();
 });
 
 // Save to trip helpers
@@ -3356,14 +3566,27 @@ function isSavedTrip(clubId) {
   return savedTrips.includes(clubId);
 }
 
-// ── Filter bar toggle ──────────────────────────────────────────────────────
-document.getElementById('filter-toggle').addEventListener('click', function() {
+// ── Filter panel toggle ───────────────────────────────────────────────────
+function closeFilterPanel() {
+  filterBarOpen = false;
+  document.getElementById('filter-panel').classList.remove('open');
+  document.getElementById('filter-toggle').classList.remove('active');
+}
+document.getElementById('filter-toggle').addEventListener('click', function(e) {
+  e.stopPropagation();
   filterBarOpen = !filterBarOpen;
   this.classList.toggle('active', filterBarOpen);
-  document.getElementById('filter-bar').classList.toggle('open', filterBarOpen);
+  document.getElementById('filter-panel').classList.toggle('open', filterBarOpen);
 });
-// Mark active on load since filterBarOpen = true
-document.getElementById('filter-toggle').classList.add('active');
+// Close filter panel when clicking outside
+document.addEventListener('click', function(e) {
+  if (!filterBarOpen) return;
+  const panel = document.getElementById('filter-panel');
+  const toggle = document.getElementById('filter-toggle');
+  if (!panel.contains(e.target) && !toggle.contains(e.target)) {
+    closeFilterPanel();
+  }
+});
 
 // ── Clear all filters ──────────────────────────────────────────────────────
 document.getElementById('clear-filters-btn').addEventListener('click', function() {
@@ -3372,10 +3595,10 @@ document.getElementById('clear-filters-btn').addEventListener('click', function(
   activeCountry = 'all';
   showLunchOnly = false;
   showRatedOnly = false;
-  document.querySelectorAll('#type-filters .pill').forEach(b => b.classList.toggle('active', b.dataset.type === 'all'));
-  document.querySelectorAll('#country-filters .pill').forEach(b => b.classList.toggle('active', b.dataset.country === 'all'));
-  document.getElementById('lunch-toggle').classList.remove('active');
-  document.getElementById('rated-toggle').classList.remove('active');
+  document.querySelectorAll('#type-filters .segment-btn').forEach(b => b.classList.toggle('active', b.dataset.type === 'all'));
+  document.querySelectorAll('#country-filters .segment-btn').forEach(b => b.classList.toggle('active', b.dataset.country === 'all'));
+  document.getElementById('lunch-toggle').classList.remove('on');
+  document.getElementById('rated-toggle').classList.remove('on');
   render();
 });
 
@@ -3814,12 +4037,7 @@ document.getElementById('mobile-view-toggle').addEventListener('click', function
   }
 });
 
-// Start filter bar collapsed on mobile
-if (window.innerWidth <= 768) {
-  filterBarOpen = false;
-  document.getElementById('filter-bar').classList.remove('open');
-  document.getElementById('filter-toggle').classList.remove('active');
-}
+// Filter panel starts closed (already default), no extra action needed
 
 // ══════════════════════════════════════════════════════════════════════════════
 // ── TAB NAVIGATION ────────────────────────────────────────────────────────────
