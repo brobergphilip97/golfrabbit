@@ -1353,31 +1353,126 @@
       display: flex;
       flex-direction: column;
     }
-    .chat-body iframe {
+    .chat-messages {
       flex: 1;
-      width: 100%;
-      border: none;
-      background: var(--bg);
-    }
-    .chat-placeholder {
-      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      color: var(--text-tertiary);
-      gap: 10px;
-      padding: 30px;
+      gap: 6px;
+      scrollbar-width: thin;
+      scrollbar-color: #222 transparent;
+    }
+    .chat-welcome {
       text-align: center;
+      padding: 20px 10px;
+      color: var(--text-tertiary);
     }
-    .chat-placeholder-icon {
-      font-size: 2.5rem;
-      opacity: 0.4;
+    .chat-bubble {
+      max-width: 85%;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      word-break: break-word;
     }
-    .chat-placeholder p {
+    .chat-bubble-other {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      align-self: flex-start;
+    }
+    .chat-bubble-self {
+      background: var(--accent-dim);
+      border: 1px solid rgba(52,211,153,0.2);
+      align-self: flex-end;
+    }
+    .chat-bubble-nick {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 3px;
+    }
+    .chat-bubble-self .chat-bubble-nick {
+      color: #6ee7b7;
+    }
+    .chat-bubble-time {
+      font-size: 0.6rem;
+      color: var(--text-tertiary);
+      margin-top: 2px;
+      text-align: right;
+    }
+    .chat-bubble-system {
+      text-align: center;
+      font-size: 0.7rem;
+      color: var(--text-tertiary);
+      padding: 4px 0;
+      font-style: italic;
+    }
+    .chat-input-area {
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .chat-nickname-bar {
+      display: flex;
+      padding: 10px 12px;
+      gap: 8px;
+    }
+    .chat-nick-input {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      padding: 8px 12px;
       font-size: 0.82rem;
-      line-height: 1.5;
+      outline: none;
+      font-family: inherit;
     }
+    .chat-nick-input:focus { border-color: var(--accent); }
+    .chat-nick-input::placeholder { color: var(--text-tertiary); }
+    .chat-nick-btn {
+      background: var(--accent);
+      border: none;
+      border-radius: 10px;
+      color: #000;
+      padding: 8px 18px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity 0.15s;
+    }
+    .chat-nick-btn:hover { opacity: 0.85; }
+    .chat-compose {
+      display: flex;
+      padding: 10px 12px;
+      gap: 8px;
+    }
+    .chat-msg-field {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      padding: 8px 12px;
+      font-size: 0.82rem;
+      outline: none;
+      font-family: inherit;
+    }
+    .chat-msg-field:focus { border-color: var(--accent); }
+    .chat-msg-field::placeholder { color: var(--text-tertiary); }
+    .chat-send-btn {
+      background: var(--accent);
+      border: none;
+      border-radius: 10px;
+      color: #000;
+      width: 40px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .chat-send-btn:hover { opacity: 0.85; }
 
     /* ── COURSES VIEW CONTROLS ────────────────────────────────────────── */
     .karta-only { /* elements hidden on non-courses tabs */ }
@@ -2233,9 +2328,10 @@
         <span class="chat-header-count" data-i18n="chat_subtitle">Live diskussion</span>
       </div>
       <div class="chat-body" id="chat-body">
-        <div class="chat-placeholder">
-          <div class="chat-placeholder-icon">💬</div>
-          <p>Laddar chatt...</p>
+        <div class="chat-welcome">
+          <div style="font-size:1.5rem;margin-bottom:8px;">💬</div>
+          <div style="font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:4px;">Golf Chat</div>
+          <div style="font-size:0.72rem;color:var(--text-tertiary);">Loading chat...</div>
         </div>
       </div>
     </div>
@@ -3940,21 +4036,7 @@ function loadTournamentData(event) {
   // Update chat room to match tournament
   const eventSlug = eventName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   if (chatInitialized) {
-    const chatBody = document.getElementById('chat-body');
-    chatBody.innerHTML = `
-      <div style="padding:14px 16px;border-bottom:1px solid var(--border);text-align:center;">
-        <div style="font-size:1.3rem;margin-bottom:6px;">💬</div>
-        <div style="font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:4px;">Join the discussion!</div>
-        <div style="font-size:0.72rem;color:var(--text-tertiary);line-height:1.5;">Enter a nickname in the field below and start chatting with other golf fans.</div>
-      </div>
-      <iframe
-        src="https://tlk.io/golfrabbit-${eventSlug}"
-        style="flex:1;width:100%;border:none;background:#0a0a0a;border-radius:0;"
-        loading="lazy"
-      ></iframe>
-      <div style="padding:6px 12px;border-top:1px solid var(--border);font-size:0.68rem;color:var(--text-tertiary);text-align:center;">
-        ${t('chat_footer')}
-      </div>`;
+    switchChatRoom(eventSlug);
   }
 
   // Parse competitors
@@ -4072,25 +4154,152 @@ document.getElementById('lb-search').addEventListener('input', function() {
 // ══════════════════════════════════════════════════════════════════════════════
 
 let chatInitialized = false;
+let chatNickname = localStorage.getItem('golfrabbit_chat_nick') || '';
+let chatChannel = null;
 
 function initChat() {
   chatInitialized = true;
   const chatBody = document.getElementById('chat-body');
-  const eventName = document.querySelector('.lb-title')?.textContent?.trim() || 'the tournament';
+
   chatBody.innerHTML = `
-    <div style="padding:14px 16px;border-bottom:1px solid var(--border);text-align:center;">
-      <div style="font-size:1.3rem;margin-bottom:6px;">💬</div>
-      <div style="font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:4px;">Join the discussion!</div>
-      <div style="font-size:0.72rem;color:var(--text-tertiary);line-height:1.5;">Enter a nickname in the field below and start chatting with other golf fans.</div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-welcome">
+        <div style="font-size:1.5rem;margin-bottom:8px;">💬</div>
+        <div style="font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:4px;">Golf Chat</div>
+        <div style="font-size:0.72rem;color:var(--text-tertiary);">Chat with other golf fans watching the tournament</div>
+      </div>
     </div>
-    <iframe
-      src="https://tlk.io/golfrabbit-pga-tour"
-      style="flex:1;width:100%;border:none;background:#0a0a0a;border-radius:0;"
-      loading="lazy"
-    ></iframe>
-    <div style="padding:6px 12px;border-top:1px solid var(--border);font-size:0.68rem;color:var(--text-tertiary);text-align:center;">
-      ${t('chat_footer')}
-    </div>`;
+    <div class="chat-input-area">
+      <div class="chat-nickname-bar" id="chat-nickname-bar">
+        <input type="text" id="chat-nickname" class="chat-nick-input" placeholder="Pick a nickname..." maxlength="20" value="${chatNickname}" />
+        <button id="chat-nick-set" class="chat-nick-btn">Join</button>
+      </div>
+      <div class="chat-compose" id="chat-compose" style="display:none">
+        <input type="text" id="chat-msg-input" class="chat-msg-field" placeholder="Type a message..." maxlength="500" autocomplete="off" />
+        <button id="chat-send" class="chat-send-btn">→</button>
+      </div>
+    </div>
+  `;
+
+  // If user already has a nickname, auto-join
+  if (chatNickname) {
+    joinChat();
+  }
+
+  // Set nickname
+  document.getElementById('chat-nick-set').addEventListener('click', () => {
+    const nick = document.getElementById('chat-nickname').value.trim();
+    if (!nick) return;
+    chatNickname = nick;
+    localStorage.setItem('golfrabbit_chat_nick', nick);
+    joinChat();
+  });
+
+  document.getElementById('chat-nickname').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('chat-nick-set').click();
+  });
+}
+
+function joinChat() {
+  // Show compose bar, hide nickname bar
+  document.getElementById('chat-nickname-bar').style.display = 'none';
+  document.getElementById('chat-compose').style.display = 'flex';
+
+  // Add system message
+  addChatMessage(null, `${chatNickname} joined the chat`, 'system');
+
+  // Subscribe to Supabase Realtime Broadcast channel
+  const eventSlug = document.querySelector('.lb-title')?.textContent?.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'pga-tour';
+  const roomName = 'golf-' + eventSlug;
+  chatChannel = supabaseClient.channel(roomName);
+
+  chatChannel.on('broadcast', { event: 'message' }, (payload) => {
+    const { nickname, text, time } = payload.payload;
+    if (nickname !== chatNickname) {
+      addChatMessage(nickname, text, 'other', time);
+    }
+  });
+
+  chatChannel.subscribe();
+
+  // Send message
+  const sendMsg = () => {
+    const input = document.getElementById('chat-msg-input');
+    const text = input.value.trim();
+    if (!text) return;
+
+    const time = new Date().toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+
+    // Broadcast to others
+    chatChannel.send({
+      type: 'broadcast',
+      event: 'message',
+      payload: { nickname: chatNickname, text, time }
+    });
+
+    // Show locally
+    addChatMessage(chatNickname, text, 'self', time);
+    input.value = '';
+    input.focus();
+  };
+
+  document.getElementById('chat-send').addEventListener('click', sendMsg);
+  document.getElementById('chat-msg-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') sendMsg();
+  });
+
+  document.getElementById('chat-msg-input').focus();
+}
+
+function addChatMessage(nick, text, type, time) {
+  const messages = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+
+  if (type === 'system') {
+    div.className = 'chat-bubble-system';
+    div.textContent = text;
+  } else {
+    const timeStr = time || new Date().toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
+    div.className = `chat-bubble chat-bubble-${type}`;
+    div.innerHTML = `
+      <div class="chat-bubble-nick">${nick.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+      <div>${text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+      <div class="chat-bubble-time">${timeStr}</div>
+    `;
+  }
+
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+// When tournament changes, update chat room
+function switchChatRoom(tournamentSlug) {
+  if (chatChannel) {
+    chatChannel.unsubscribe();
+  }
+  // Clear existing messages
+  const messagesEl = document.getElementById('chat-messages');
+  if (messagesEl) {
+    messagesEl.innerHTML = `
+      <div class="chat-welcome">
+        <div style="font-size:1.5rem;margin-bottom:8px;">💬</div>
+        <div style="font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:4px;">Golf Chat</div>
+        <div style="font-size:0.72rem;color:var(--text-tertiary);">Chat with other golf fans watching the tournament</div>
+      </div>
+    `;
+  }
+  if (chatInitialized && chatNickname) {
+    const roomName = 'golf-' + tournamentSlug;
+    chatChannel = supabaseClient.channel(roomName);
+    chatChannel.on('broadcast', { event: 'message' }, (payload) => {
+      const { nickname, text, time } = payload.payload;
+      if (nickname !== chatNickname) {
+        addChatMessage(nickname, text, 'other', time);
+      }
+    });
+    chatChannel.subscribe();
+    addChatMessage(null, `${chatNickname} joined the chat`, 'system');
+  }
 }
 
 // Tournament selector change handler
