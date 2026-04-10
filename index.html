@@ -1,0 +1,4550 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GolfRabbit — Your Golf Platform</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <style>
+    :root {
+      --bg: #080808;
+      --surface: rgba(255,255,255,0.04);
+      --surface-hover: rgba(255,255,255,0.07);
+      --border: rgba(255,255,255,0.08);
+      --accent: #34d399;
+      --accent-dim: rgba(52,211,153,0.15);
+      --text: #f5f5f7;
+      --text-secondary: #86868b;
+      --text-tertiary: #48484a;
+      --radius: 14px;
+      --radius-sm: 8px;
+      --sidebar: 300px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── HEADER ─────────────────────────────────────────────────────── */
+    header {
+      background: rgba(8,8,8,0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 1000;
+      flex-shrink: 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .brand-icon {
+      width: 30px;
+      height: 30px;
+      background: linear-gradient(135deg, #34d399, #059669);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .brand h1 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    .divider {
+      width: 1px;
+      height: 20px;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+
+    /* search */
+    #search-wrap {
+      flex: 1;
+      max-width: 280px;
+      position: relative;
+    }
+
+    #search {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      padding: 8px 12px 8px 34px;
+      font-size: 0.82rem;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+      font-family: inherit;
+    }
+    #search:focus {
+      border-color: var(--accent);
+      background: rgba(52,211,153,0.05);
+    }
+    #search::placeholder { color: var(--text-tertiary); }
+
+    .search-icon {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-tertiary);
+      pointer-events: none;
+      font-size: 13px;
+    }
+
+    /* ── HEADER ACTION BUTTONS ───────────────────────────────────────── */
+    .header-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-secondary);
+      padding: 7px 13px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.18s;
+      font-family: inherit;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+    .header-btn:hover {
+      border-color: rgba(255,255,255,0.2);
+      color: var(--text);
+      background: var(--surface-hover);
+    }
+    .header-btn.active {
+      background: var(--accent-dim);
+      border-color: rgba(52,211,153,0.35);
+      color: var(--accent);
+    }
+
+    /* Filter toggle button with indicator dot */
+    #filter-toggle {
+      position: relative;
+    }
+    #filter-toggle .filter-dot {
+      display: none;
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 1.5px solid rgba(8,8,8,0.9);
+    }
+    #filter-toggle.has-active .filter-dot {
+      display: block;
+    }
+
+    /* Locate button icon-only */
+    #locate-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-secondary);
+      padding: 7px 10px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.18s;
+      font-family: inherit;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+    #locate-btn:hover {
+      border-color: rgba(255,255,255,0.2);
+      color: var(--text);
+      background: var(--surface-hover);
+    }
+
+    /* ── TIME PICKER ─────────────────────────────────────────────────── */
+    .time-btn-inactive {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-secondary);
+      padding: 7px 13px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.18s;
+      font-family: inherit;
+      white-space: nowrap;
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+    .time-btn-inactive:hover { border-color: rgba(255,255,255,0.2); color: var(--text); background: var(--surface-hover); }
+
+    .time-btn-active {
+      background: rgba(99,102,241,0.15);
+      border: 1px solid rgba(99,102,241,0.35);
+      border-radius: 10px;
+      color: #a5b4fc;
+      padding: 7px 13px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.18s;
+      font-family: inherit;
+      white-space: nowrap;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    #time-popover {
+      display: none;
+      position: absolute;
+      top: 62px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #161616;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      padding: 18px;
+      z-index: 1500;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+      width: 320px;
+      animation: slideUp 0.18s ease;
+    }
+    #time-popover.open { display: block; }
+
+    .tp-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    .tp-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .tp-field {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .tp-field label {
+      font-size: 0.71rem;
+      color: var(--text-tertiary);
+      font-weight: 500;
+    }
+
+    .tp-field input {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 7px 10px;
+      font-size: 0.82rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+      width: 100%;
+      color-scheme: dark;
+    }
+    .tp-field input:focus { border-color: #6366f1; }
+
+    #tp-result {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      display: none;
+    }
+
+    #tp-result.show { display: block; }
+
+    .tp-tier {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .tp-prices {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tp-price {
+      font-size: 0.72rem;
+      padding: 3px 9px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+    .tp-price-budget { background: rgba(52,211,153,0.12); color: #34d399; }
+    .tp-price-standard { background: rgba(251,191,36,0.12); color: #fbbf24; }
+    .tp-price-premium { background: rgba(248,113,113,0.12); color: #f87171; }
+
+    .tp-note {
+      font-size: 0.68rem;
+      color: var(--text-tertiary);
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+
+    #tp-clear {
+      width: 100%;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-tertiary);
+      padding: 7px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    #tp-clear:hover { border-color: rgba(255,255,255,0.2); color: var(--text-secondary); }
+
+    .tag-gf-budget { background: rgba(52,211,153,0.1); color: #34d399; }
+    .tag-gf-standard { background: rgba(251,191,36,0.1); color: #fbbf24; }
+    .tag-gf-premium { background: rgba(248,113,113,0.1); color: #f87171; }
+
+    #rankings-btn {
+      background: linear-gradient(135deg, rgba(52,211,153,0.15), rgba(99,102,241,0.15));
+      border: 1px solid rgba(52,211,153,0.3);
+      border-radius: 10px;
+      color: var(--accent);
+      padding: 7px 14px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.18s;
+      font-family: inherit;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      letter-spacing: 0.1px;
+      flex-shrink: 0;
+    }
+    #rankings-btn:hover {
+      background: linear-gradient(135deg, rgba(52,211,153,0.25), rgba(99,102,241,0.25));
+      border-color: var(--accent);
+    }
+
+    #status {
+      font-size: 0.73rem;
+      color: var(--text-tertiary);
+      white-space: nowrap;
+      letter-spacing: 0.1px;
+      flex-shrink: 0;
+    }
+    #status.loading { color: #f59e0b; }
+    #status.done { color: var(--accent); }
+    #status.error { color: #f87171; }
+
+    /* ── LANGUAGE SWITCHER ────────────────────────────────────────────── */
+    .lang-switcher {
+      display: flex;
+      gap: 3px;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+    .lang-btn {
+      background: none;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      padding: 3px 6px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      opacity: 0.5;
+      transition: all 0.15s;
+    }
+    .lang-btn:hover { opacity: 0.8; }
+    .lang-btn.active { opacity: 1; border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); }
+
+    /* ── FILTER BAR ──────────────────────────────────────────────────── */
+    #filter-bar {
+      display: none;
+      background: rgba(255,255,255,0.02);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px 14px;
+      flex-shrink: 0;
+      z-index: 900;
+    }
+    #filter-bar.open { display: block; }
+
+    .filter-bar-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .filter-bar-title {
+      font-size: 0.7rem;
+      color: var(--text-tertiary);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    #clear-filters-btn {
+      display: none;
+      background: none;
+      border: 1px solid rgba(52,211,153,0.3);
+      border-radius: 7px;
+      color: var(--accent);
+      font-size: 0.72rem;
+      font-weight: 500;
+      padding: 3px 10px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    #clear-filters-btn:hover { background: var(--accent-dim); }
+    #clear-filters-btn.visible { display: block; }
+
+    .filter-section {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .filter-section + .filter-section {
+      margin-top: 10px;
+    }
+
+    .filter-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .filter-row + .filter-row {
+      margin-top: 8px;
+    }
+
+    .filter-label {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      font-weight: 600;
+      letter-spacing: 0.1px;
+      min-width: 50px;
+    }
+
+    .filter-pills {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .filter-sep {
+      width: 1px;
+      height: 18px;
+      background: var(--border);
+      margin: 0 4px;
+      flex-shrink: 0;
+    }
+
+    .pill {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      color: var(--text-secondary);
+      padding: 6px 15px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.18s;
+      font-family: inherit;
+      white-space: nowrap;
+      letter-spacing: 0.1px;
+    }
+    .pill:hover {
+      border-color: rgba(255,255,255,0.2);
+      color: var(--text);
+      background: var(--surface-hover);
+    }
+    .pill.active {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ── WELCOME MODAL ────────────────────────────────────────────────── */
+    #welcome-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 3000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      animation: welcomeFadeIn 0.5s ease forwards;
+    }
+    @keyframes welcomeFadeIn { to { opacity: 1; } }
+    #welcome-modal {
+      background: linear-gradient(145deg, #111, #0a0a0a);
+      border: 1px solid rgba(52,211,153,0.2);
+      border-radius: 20px;
+      padding: 40px 36px 32px;
+      max-width: 420px;
+      width: 90%;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 40px rgba(52,211,153,0.08);
+      animation: welcomeSlideUp 0.5s cubic-bezier(.4,0,.2,1) forwards;
+      transform: translateY(30px);
+    }
+    @keyframes welcomeSlideUp { to { transform: translateY(0); } }
+    .welcome-icon { font-size: 2.8rem; margin-bottom: 16px; display: block; }
+    .welcome-title {
+      font-size: 1.3rem; font-weight: 700; color: var(--text);
+      margin-bottom: 6px; letter-spacing: -0.3px;
+    }
+    .welcome-subtitle {
+      font-size: 0.82rem; color: var(--text-secondary);
+      line-height: 1.6; margin-bottom: 24px;
+    }
+    .welcome-subtitle strong { color: var(--accent); font-weight: 600; }
+    .welcome-note {
+      font-size: 0.72rem; color: var(--text-tertiary);
+      line-height: 1.5; margin-bottom: 24px; font-style: italic;
+    }
+    #welcome-enter {
+      background: linear-gradient(135deg, #34d399, #059669);
+      border: none; border-radius: 12px; color: #000;
+      font-size: 0.88rem; font-weight: 700; padding: 12px 36px;
+      cursor: pointer; font-family: inherit; letter-spacing: 0.3px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 16px rgba(52,211,153,0.25);
+    }
+    #welcome-enter:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(52,211,153,0.35);
+    }
+
+    /* ── RANKINGS MODAL ──────────────────────────────────────────────── */
+    #rankings-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      animation: fadeIn 0.2s ease;
+    }
+    #rankings-overlay.open { display: flex; }
+
+    @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+    @keyframes slideUp { from { transform:translateY(20px); opacity:0 } to { transform:translateY(0); opacity:1 } }
+
+    #rankings-modal {
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 700px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.8);
+      animation: slideUp 0.22s ease;
+    }
+
+    #rankings-modal-header {
+      padding: 20px 24px 0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    #rankings-modal-header h2 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+      color: var(--text);
+    }
+    #rankings-modal-header p {
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+      margin-top: 3px;
+    }
+
+    #rankings-close {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+    #rankings-close:hover { background: var(--surface-hover); color: var(--text); }
+
+    #rankings-tabs {
+      display: flex;
+      gap: 2px;
+      padding: 16px 24px 0;
+      flex-shrink: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    #rankings-tabs::-webkit-scrollbar { display: none; }
+
+    .rtab {
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 9px;
+      color: var(--text-tertiary);
+      padding: 7px 14px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+      white-space: nowrap;
+      letter-spacing: 0.1px;
+    }
+    .rtab:hover { color: var(--text-secondary); background: var(--surface); }
+    .rtab.active {
+      background: var(--accent-dim);
+      border-color: rgba(52,211,153,0.25);
+      color: var(--accent);
+    }
+
+    #rankings-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 24px 24px;
+      scrollbar-width: thin;
+      scrollbar-color: #222 transparent;
+    }
+    #rankings-body::-webkit-scrollbar { width: 3px; }
+    #rankings-body::-webkit-scrollbar-thumb { background: #222; border-radius: 3px; }
+
+    .rank-category-note {
+      font-size: 0.73rem;
+      color: var(--text-tertiary);
+      margin-bottom: 14px;
+      padding: 8px 12px;
+      background: var(--surface);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      line-height: 1.5;
+    }
+
+    .rank-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-bottom: 3px;
+    }
+    .rank-item:hover { background: var(--surface-hover); }
+
+    .rank-num {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-tertiary);
+      width: 22px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .rank-num.gold { color: #fbbf24; font-size: 1rem; }
+    .rank-num.silver { color: #94a3b8; font-size: 1rem; }
+    .rank-num.bronze { color: #cd7c3f; font-size: 1rem; }
+
+    .rank-info { flex: 1; min-width: 0; }
+    .rank-name {
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+    .rank-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+
+    .rank-score {
+      flex-shrink: 0;
+      text-align: right;
+    }
+    .rank-score-val {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .rank-score-label {
+      font-size: 0.65rem;
+      color: var(--text-tertiary);
+      margin-top: 1px;
+    }
+
+    .rank-actions {
+      display: flex;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+
+    .rank-btn {
+      padding: 5px 10px;
+      border-radius: 7px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      text-decoration: none;
+      transition: all 0.15s;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .rank-btn-yt { background: rgba(255,0,0,0.1); border: 1px solid rgba(255,0,0,0.18); color: #f87171; }
+    .rank-btn-yt:hover { background: rgba(255,0,0,0.18); }
+    .rank-btn-gm { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.18); color: #fbbf24; }
+    .rank-btn-gm:hover { background: rgba(251,191,36,0.18); }
+    .rank-btn-map { background: var(--surface); border: 1px solid var(--border); color: var(--text-secondary); }
+    .rank-btn-map:hover { background: var(--surface-hover); color: var(--text); }
+
+    /* ── LAYOUT ──────────────────────────────────────────────────────── */
+    .main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ── SIDEBAR ─────────────────────────────────────────────────────── */
+    #sidebar {
+      width: var(--sidebar);
+      min-width: 0;
+      flex-shrink: 0;
+      background: rgba(10,10,10,0.95);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: width 0.25s cubic-bezier(.4,0,.2,1);
+    }
+    #sidebar.collapsed {
+      width: 0 !important;
+      border-right: none;
+    }
+    #sidebar.collapsed > * {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* ── RESIZE HANDLE ───────────────────────────────────────────────── */
+    #sidebar-resize {
+      width: 5px;
+      cursor: col-resize;
+      background: transparent;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 10;
+      transition: background 0.15s;
+    }
+    #sidebar-resize:hover,
+    #sidebar-resize.dragging {
+      background: var(--accent);
+    }
+    #sidebar-resize::after {
+      content: '';
+      position: absolute;
+      left: -4px;
+      right: -4px;
+      top: 0;
+      bottom: 0;
+    }
+
+    /* ── SIDEBAR TOGGLE ──────────────────────────────────────────────── */
+    #sidebar-toggle {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 600;
+      width: 22px;
+      height: 56px;
+      background: rgba(10,10,10,0.92);
+      border: 1px solid var(--border);
+      border-left: none;
+      border-radius: 0 8px 8px 0;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      transition: all 0.2s;
+      backdrop-filter: blur(8px);
+    }
+    #sidebar-toggle:hover {
+      color: var(--text);
+      background: rgba(20,20,20,0.95);
+      border-color: rgba(255,255,255,0.15);
+    }
+    #sidebar.collapsed ~ #sidebar-resize { display: none; }
+
+    #sidebar-header {
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    #sidebar-title {
+      font-size: 0.72rem;
+      color: var(--text-tertiary);
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    #sidebar-count-line {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    #sidebar-count-line strong {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    #club-list {
+      flex: 1;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #222 transparent;
+      padding: 6px;
+    }
+    #club-list::-webkit-scrollbar { width: 3px; }
+    #club-list::-webkit-scrollbar-thumb { background: #222; border-radius: 3px; }
+
+    /* ── CLUB CARD ───────────────────────────────────────────────────── */
+    .club-card {
+      padding: 12px 12px 10px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-bottom: 2px;
+      position: relative;
+    }
+    .club-card:hover { background: var(--surface-hover); }
+    .club-card.active {
+      background: var(--accent-dim);
+      border: 1px solid rgba(52,211,153,0.2);
+    }
+
+    .club-card-name {
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+      letter-spacing: -0.1px;
+      line-height: 1.3;
+    }
+
+    .club-card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 4px;
+    }
+
+    .tag {
+      font-size: 0.68rem;
+      font-weight: 500;
+      padding: 2px 7px;
+      border-radius: 5px;
+      letter-spacing: 0.1px;
+    }
+    .tag-holes { background: rgba(99,102,241,0.15); color: #a5b4fc; }
+    .tag-lunch { background: rgba(251,146,60,0.15); color: #fb923c; }
+    .tag-season-open { background: rgba(52,211,153,0.12); color: var(--accent); }
+    .tag-season-closed { background: rgba(255,255,255,0.05); color: var(--text-tertiary); }
+
+    .club-card-reviews {
+      font-size: 0.71rem;
+      color: var(--text-tertiary);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 4px;
+    }
+
+    .stars {
+      color: #f59e0b;
+      letter-spacing: -1px;
+      font-size: 0.7rem;
+    }
+
+    /* ── CARD ACTION BUTTONS ─────────────────────────────────────────── */
+    .club-card-actions {
+      display: flex;
+      gap: 5px;
+      margin-top: 7px;
+    }
+
+    .card-action-btn {
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      text-decoration: none;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 4px 9px;
+      transition: all 0.15s;
+      border: 1px solid transparent;
+      cursor: pointer;
+      font-family: inherit;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .card-action-btn-web {
+      background: rgba(99,102,241,0.1);
+      border-color: rgba(99,102,241,0.2);
+      color: #a5b4fc;
+    }
+    .card-action-btn-web:hover { background: rgba(99,102,241,0.2); border-color: rgba(99,102,241,0.35); }
+
+    .card-action-btn-yt {
+      background: rgba(255,0,0,0.1);
+      border-color: rgba(255,0,0,0.15);
+      color: #f87171;
+    }
+    .card-action-btn-yt:hover { background: rgba(255,0,0,0.2); border-color: rgba(255,0,0,0.3); }
+
+    .card-action-btn-gm {
+      background: rgba(251,191,36,0.1);
+      border-color: rgba(251,191,36,0.15);
+      color: #fbbf24;
+    }
+    .card-action-btn-gm:hover { background: rgba(251,191,36,0.2); border-color: rgba(251,191,36,0.3); }
+
+    .card-action-btn-gf {
+      background: rgba(52,211,153,0.08);
+      border-color: rgba(52,211,153,0.15);
+      color: #34d399;
+    }
+    .card-action-btn-gf:hover { background: rgba(52,211,153,0.18); border-color: rgba(52,211,153,0.3); }
+
+    #no-results {
+      padding: 32px 16px;
+      font-size: 0.82rem;
+      color: var(--text-tertiary);
+      text-align: center;
+      display: none;
+    }
+
+    /* ── MAP ─────────────────────────────────────────────────────────── */
+    #map { flex: 1; }
+
+    /* ── CLUSTERS ────────────────────────────────────────────────────── */
+    .marker-cluster-small,
+    .marker-cluster-medium,
+    .marker-cluster-large {
+      background: transparent !important;
+    }
+    .marker-cluster-small div,
+    .marker-cluster-medium div,
+    .marker-cluster-large div { background: transparent !important; }
+
+    .g-cluster {
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.78rem;
+      color: #fff;
+      letter-spacing: -0.3px;
+    }
+    .g-cluster.sm {
+      width: 36px; height: 36px;
+      background: radial-gradient(circle at 38% 38%, rgba(52,211,153,0.9), rgba(5,150,105,0.95));
+      box-shadow: 0 0 0 3px rgba(52,211,153,0.2), 0 2px 8px rgba(0,0,0,0.4);
+    }
+    .g-cluster.md {
+      width: 44px; height: 44px;
+      background: radial-gradient(circle at 38% 38%, rgba(251,191,36,0.95), rgba(217,119,6,0.95));
+      box-shadow: 0 0 0 3px rgba(251,191,36,0.2), 0 2px 10px rgba(0,0,0,0.4);
+    }
+    .g-cluster.lg {
+      width: 52px; height: 52px;
+      background: radial-gradient(circle at 38% 38%, rgba(248,113,113,0.95), rgba(185,28,28,0.95));
+      box-shadow: 0 0 0 3px rgba(248,113,113,0.2), 0 2px 12px rgba(0,0,0,0.4);
+    }
+
+    .g-pin {
+      width: 32px; height: 32px;
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      background: linear-gradient(145deg, #34d399, #059669);
+      border: 2px solid rgba(255,255,255,0.3);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.5);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .g-pin span { transform: rotate(45deg); font-size: 14px; line-height: 1; }
+
+    /* ── POPUP ───────────────────────────────────────────────────────── */
+    .leaflet-popup-content-wrapper {
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px !important;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.7);
+      color: var(--text);
+      padding: 0 !important;
+      overflow: hidden;
+      min-width: 240px;
+    }
+    .leaflet-popup-content { margin: 0 !important; width: auto !important; }
+    .leaflet-popup-tip-container { display: none; }
+    .leaflet-popup-close-button {
+      color: var(--text-tertiary) !important;
+      top: 10px !important;
+      right: 10px !important;
+      font-size: 18px !important;
+      z-index: 10;
+    }
+    .leaflet-popup-close-button:hover { color: var(--text) !important; }
+
+    .popup-inner { padding: 18px 18px 14px; }
+
+    .popup-name {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+      letter-spacing: -0.3px;
+      padding-right: 16px;
+      line-height: 1.3;
+    }
+
+    .popup-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-bottom: 12px;
+    }
+
+    .popup-rows { margin-bottom: 14px; }
+
+    .popup-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      padding: 3px 0;
+    }
+    .popup-row a { color: var(--accent); text-decoration: none; }
+    .popup-row a:hover { text-decoration: underline; }
+    .popup-row .icon { font-size: 12px; width: 16px; text-align: center; }
+
+    .popup-actions {
+      display: flex;
+      gap: 7px;
+      padding: 12px 18px 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .popup-btn {
+      flex: 1;
+      padding: 8px 10px;
+      border-radius: 9px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      text-align: center;
+      text-decoration: none;
+      transition: all 0.15s;
+      letter-spacing: 0.1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+    .popup-btn-primary {
+      background: var(--accent-dim);
+      border: 1px solid rgba(52,211,153,0.25);
+      color: var(--accent);
+    }
+    .popup-btn-primary:hover { background: rgba(52,211,153,0.2); }
+    .popup-btn-secondary {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+    .popup-btn-secondary:hover { background: var(--surface-hover); color: var(--text); }
+    .popup-btn-yt {
+      background: rgba(255,0,0,0.1);
+      border: 1px solid rgba(255,0,0,0.2);
+      color: #f87171;
+    }
+    .popup-btn-yt:hover { background: rgba(255,0,0,0.18); color: #fca5a5; }
+    .popup-btn-book {
+      background: rgba(129,140,248,0.12);
+      border: 1px solid rgba(129,140,248,0.25);
+      color: #a5b4fc;
+      font-weight: 600;
+    }
+    .popup-btn-book:hover { background: rgba(129,140,248,0.22); color: #c7d2fe; }
+
+    /* ── TAB NAVIGATION ──────────────────────────────────────────────── */
+    .nav-tabs {
+      display: flex;
+      gap: 2px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 10px;
+      padding: 3px;
+      flex-shrink: 0;
+    }
+    .nav-tab {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 5px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+      transition: all 0.18s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .nav-tab:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+    .nav-tab.active {
+      background: var(--accent-dim);
+      color: var(--accent);
+    }
+    .nav-tab .live-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #ef4444;
+      animation: livePulse 1.5s ease-in-out infinite;
+    }
+    @keyframes livePulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* ── MASTERS VIEW ────────────────────────────────────────────────── */
+    #masters-view {
+      display: none;
+      flex: 1;
+      overflow: hidden;
+    }
+    #masters-view.active { display: flex; }
+
+    .masters-layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      height: 100%;
+    }
+
+    /* Leaderboard panel */
+    .lb-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .lb-header {
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .lb-header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .lb-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .lb-title .masters-badge {
+      background: linear-gradient(135deg, #065f46, #047857);
+      padding: 2px 10px;
+      border-radius: 6px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #6ee7b7;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .lb-subtitle {
+      font-size: 0.72rem;
+      color: var(--text-tertiary);
+      margin-top: 2px;
+    }
+    .lb-refresh {
+      font-size: 0.7rem;
+      color: var(--text-tertiary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .lb-refresh-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: livePulse 2s ease-in-out infinite;
+    }
+
+    /* Leaderboard search */
+    .lb-search-wrap {
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .lb-search {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      padding: 8px 12px;
+      font-size: 0.82rem;
+      outline: none;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+    .lb-search:focus { border-color: var(--accent); }
+    .lb-search::placeholder { color: var(--text-tertiary); }
+
+    /* Leaderboard table */
+    .lb-table-wrap {
+      flex: 1;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #222 transparent;
+    }
+    .lb-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+    .lb-table thead {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+    .lb-table th {
+      background: rgba(8,8,8,0.95);
+      color: var(--text-tertiary);
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .lb-table th:first-child { padding-left: 20px; }
+    .lb-table th.col-score,
+    .lb-table th.col-today,
+    .lb-table th.col-thru,
+    .lb-table th.col-round {
+      text-align: center;
+    }
+    .lb-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      color: var(--text);
+      vertical-align: middle;
+    }
+    .lb-table td:first-child { padding-left: 20px; }
+    .lb-table tr:hover td { background: var(--surface-hover); }
+
+    /* Position styling */
+    .lb-pos {
+      font-weight: 700;
+      width: 36px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .lb-pos-1 { color: #fbbf24; }
+    .lb-pos-2 { color: #d1d5db; }
+    .lb-pos-3 { color: #d97706; }
+    .lb-medal { font-size: 0.75rem; }
+
+    /* Player name */
+    .lb-player {
+      font-weight: 600;
+      color: var(--text);
+    }
+    .lb-country {
+      font-size: 0.7rem;
+      color: var(--text-tertiary);
+      margin-left: 6px;
+    }
+
+    /* Score cells */
+    .lb-score {
+      text-align: center;
+      font-weight: 700;
+      font-size: 0.88rem;
+    }
+    .lb-score.under-par { color: #34d399; }
+    .lb-score.over-par { color: #f87171; }
+    .lb-score.even-par { color: var(--text-secondary); }
+
+    .lb-today {
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+    .lb-today.under-par { color: #34d399; }
+    .lb-today.over-par { color: #f87171; }
+    .lb-today.even-par { color: var(--text-secondary); }
+
+    .lb-thru {
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.78rem;
+    }
+    .lb-round {
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.78rem;
+    }
+
+    .lb-cut-line td {
+      background: rgba(239,68,68,0.05);
+      border-top: 1px dashed rgba(239,68,68,0.3);
+      color: var(--text-tertiary);
+      font-size: 0.72rem;
+      text-align: center;
+      padding: 6px;
+    }
+
+    .lb-loading {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-tertiary);
+      font-size: 0.9rem;
+    }
+    .lb-loading .spinner {
+      display: inline-block;
+      width: 24px; height: 24px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── CHAT PANEL ──────────────────────────────────────────────────── */
+    .chat-panel {
+      width: 340px;
+      flex-shrink: 0;
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      background: rgba(10,10,10,0.95);
+    }
+    .chat-header {
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .chat-header-icon {
+      font-size: 1.1rem;
+    }
+    .chat-header-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .chat-header-count {
+      font-size: 0.7rem;
+      color: var(--text-tertiary);
+      margin-left: auto;
+    }
+    .chat-body {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-body iframe {
+      flex: 1;
+      width: 100%;
+      border: none;
+      background: var(--bg);
+    }
+    .chat-placeholder {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-tertiary);
+      gap: 10px;
+      padding: 30px;
+      text-align: center;
+    }
+    .chat-placeholder-icon {
+      font-size: 2.5rem;
+      opacity: 0.4;
+    }
+    .chat-placeholder p {
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+
+    /* ── COURSES VIEW CONTROLS ────────────────────────────────────────── */
+    .karta-only { /* elements hidden on non-courses tabs */ }
+    body.tab-live .karta-only { display: none !important; }
+    body.tab-live #filter-bar { display: none !important; }
+    body.tab-live #mobile-view-toggle { display: none !important; }
+
+    /* ── MOBILE VIEW TOGGLE ──────────────────────────────────────────── */
+    #mobile-view-toggle {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1100;
+      background: rgba(8,8,8,0.92);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 4px;
+      gap: 2px;
+    }
+    #mobile-view-toggle button {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 8px 18px;
+      border-radius: 11px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.18s;
+    }
+    #mobile-view-toggle button.active {
+      background: var(--accent-dim);
+      color: var(--accent);
+    }
+
+    /* ══════════════════════════════════════════════════════════════════ */
+    /* ── MOBILE RESPONSIVE (max-width: 768px) ─────────────────────── */
+    /* ══════════════════════════════════════════════════════════════════ */
+    @media (max-width: 768px) {
+
+      /* ── HEADER ─────────────────────────────────────── */
+      header {
+        height: auto;
+        min-height: 48px;
+        padding: 8px 12px;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .brand h1 { font-size: 0.85rem; }
+      .brand-icon { width: 26px; height: 26px; font-size: 13px; }
+      .divider { display: none; }
+
+      /* Hide non-essential header items on mobile */
+      #search-wrap { order: 10; flex: 1 1 100%; max-width: none; margin-top: 2px; }
+      #search { padding: 8px 12px 8px 30px; font-size: 0.85rem; }
+      .search-icon { font-size: 12px; left: 10px; }
+
+      .nav-tabs { order: 1; }
+      .nav-tab { font-size: 0.72rem; padding: 5px 10px; }
+
+      /* Collapse these into a more menu on mobile */
+      .karta-only.header-btn,
+      .karta-only#time-btn,
+      #rankings-btn,
+      #locate-btn,
+      #status {
+        font-size: 0.7rem;
+        padding: 5px 8px;
+      }
+      #locate-btn svg { display: none; }
+      #locate-btn { font-size: 0.7rem; }
+
+      /* ── FILTER BAR ─────────────────────────────────── */
+      #filter-bar {
+        padding: 8px 12px 10px;
+      }
+      #filter-bar.open { display: none; }
+      body.mobile-filters-open #filter-bar.open { display: block; }
+      .filter-bar-top { margin-bottom: 8px; }
+      .filter-label { font-size: 0.68rem; min-width: 42px; }
+      .pill { padding: 5px 11px; font-size: 0.72rem; }
+      .filter-section + .filter-section { margin-top: 8px; }
+
+      /* ── MOBILE MAP/LIST LAYOUT ─────────────────────── */
+      .main {
+        flex-direction: column;
+        position: relative;
+      }
+
+      #sidebar {
+        width: 100% !important;
+        flex: 1;
+        border-right: none;
+        transition: none;
+        display: flex;
+      }
+      #sidebar.collapsed {
+        display: none !important;
+      }
+      #sidebar.mobile-hidden {
+        display: none !important;
+      }
+
+      #sidebar-resize { display: none !important; }
+      #sidebar-toggle { display: none !important; }
+
+      #map {
+        flex: 1;
+        width: 100%;
+        display: none !important;
+      }
+      #map.mobile-visible {
+        display: block !important;
+      }
+
+      /* Show the mobile toggle bar */
+      #mobile-view-toggle {
+        display: flex;
+      }
+
+      /* Sidebar compact cards */
+      .club-card { padding: 10px; }
+      .club-card-name { font-size: 0.9rem; }
+      .club-card-actions { gap: 4px; }
+      .card-action-btn { padding: 5px 8px; font-size: 0.72rem; }
+
+      #sidebar-header { padding: 12px; }
+      #club-list { padding: 4px; }
+
+      /* ── MASTERS MOBILE ─────────────────────────────── */
+      .masters-layout {
+        flex-direction: column;
+      }
+      .chat-panel {
+        width: 100%;
+        height: 300px;
+        border-left: none;
+        border-top: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+      .lb-header { padding: 12px; flex-direction: column; gap: 6px; align-items: flex-start; }
+      .lb-title { font-size: 0.95rem; }
+      .lb-search-wrap { padding: 8px 12px; }
+      .lb-table th { padding: 8px 6px; font-size: 0.62rem; }
+      .lb-table td { padding: 8px 6px; font-size: 0.78rem; }
+      .lb-table th:first-child,
+      .lb-table td:first-child { padding-left: 12px; }
+
+      /* Hide R3/R4 on mobile to save space */
+      .lb-table th:nth-child(8),
+      .lb-table td:nth-child(8),
+      .lb-table th:nth-child(9),
+      .lb-table td:nth-child(9) {
+        display: none;
+      }
+
+      .lb-player { font-size: 0.8rem; }
+      .lb-country { display: none; }
+      .lb-score { font-size: 0.82rem; }
+    }
+
+    /* ── iPhone SE / very small screens ────────────────────────────── */
+    @media (max-width: 380px) {
+      .nav-tab { font-size: 0.68rem; padding: 4px 8px; }
+      .brand h1 { font-size: 0.78rem; }
+      .pill { padding: 4px 9px; font-size: 0.68rem; }
+      .card-action-btn { padding: 4px 6px; font-size: 0.68rem; }
+
+      /* Also hide R2 on very small screens */
+      .lb-table th:nth-child(7),
+      .lb-table td:nth-child(7) {
+        display: none;
+      }
+    }
+
+    /* ── HIDE COURSES-ONLY CONTROLS ON OTHER TABS ─────────────────── */
+    body.tab-live .karta-only,
+    body.tab-news .karta-only,
+    body.tab-shop .karta-only,
+    body.tab-trips .karta-only { display: none !important; }
+    body.tab-live #filter-bar,
+    body.tab-news #filter-bar,
+    body.tab-shop #filter-bar,
+    body.tab-trips #filter-bar { display: none !important; }
+    body.tab-live #mobile-view-toggle,
+    body.tab-news #mobile-view-toggle,
+    body.tab-shop #mobile-view-toggle,
+    body.tab-trips #mobile-view-toggle { display: none !important; }
+    body.tab-live #search-wrap,
+    body.tab-news #search-wrap,
+    body.tab-shop #search-wrap,
+    body.tab-trips #search-wrap { display: none !important; }
+
+    /* ── NEW VIEW CONTAINERS ─────────────────────────────────────────── */
+    #view-news, #view-shop, #view-trips {
+      display: none;
+      flex: 1;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #222 transparent;
+    }
+    #view-news.active, #view-shop.active, #view-trips.active { display: block; }
+
+    /* ── MOBILE BOTTOM NAV ───────────────────────────────────────────── */
+    #mobile-bottom-nav {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(8,8,8,0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+      z-index: 1200;
+      padding: 6px 0 env(safe-area-inset-bottom, 6px);
+    }
+    @media (max-width: 768px) {
+      #mobile-bottom-nav { display: flex; justify-content: space-around; }
+      .nav-tabs { display: none !important; }
+      .main, #masters-view, #view-news, #view-shop, #view-trips { padding-bottom: 64px; }
+      #mobile-view-toggle { bottom: 74px !important; }
+    }
+    .bottom-tab {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      background: none; border: none; color: var(--text-tertiary);
+      font-size: 0.62rem; font-weight: 600; padding: 6px 12px;
+      cursor: pointer; font-family: inherit; transition: color 0.15s;
+    }
+    .bottom-tab .tab-icon { font-size: 1.2rem; }
+    .bottom-tab.active { color: var(--accent); }
+
+    /* ── NEWS VIEW ───────────────────────────────────────────────────── */
+    .news-view-header {
+      padding: 24px 20px 16px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .news-view-header h2 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .news-view-header p {
+      font-size: 0.78rem;
+      color: var(--text-tertiary);
+    }
+    .news-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+      padding: 0 20px 40px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .news-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .news-card:hover {
+      border-color: rgba(255,255,255,0.15);
+      transform: translateY(-2px);
+    }
+    .news-card-img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      background: var(--surface-hover);
+      display: block;
+    }
+    .news-card-body { padding: 16px; }
+    .news-card-title {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+    .news-card-desc {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 10px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .news-card-meta {
+      font-size: 0.72rem;
+      color: var(--text-tertiary);
+      display: flex;
+      gap: 8px;
+    }
+    .news-card-source { color: var(--accent); font-weight: 600; }
+    .news-loading {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-tertiary);
+      font-size: 0.9rem;
+    }
+
+    /* ── SHOP VIEW ───────────────────────────────────────────────────── */
+    .shop-view-header {
+      padding: 24px 20px 8px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .shop-view-header h2 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .shop-view-header p {
+      font-size: 0.78rem;
+      color: var(--text-tertiary);
+      margin-bottom: 14px;
+    }
+    .shop-categories {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+    .shop-cat-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      color: var(--text-secondary);
+      padding: 6px 15px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.18s;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+    .shop-cat-btn:hover { border-color: rgba(255,255,255,0.2); color: var(--text); background: var(--surface-hover); }
+    .shop-cat-btn.active {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .shop-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+      padding: 16px 20px 40px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .product-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .product-card:hover { border-color: rgba(255,255,255,0.15); transform: translateY(-2px); }
+    .product-featured {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #000;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      z-index: 2;
+    }
+    .product-desc {
+      font-size: 0.72rem;
+      color: var(--text-secondary);
+      margin: 2px 0 6px;
+      line-height: 1.4;
+    }
+    .product-img {
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      border-radius: var(--radius) var(--radius) 0 0;
+    }
+    .product-body { padding: 14px; }
+    .product-brand {
+      font-size: 0.7rem;
+      color: var(--accent);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .product-name {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text);
+      margin: 4px 0 8px;
+    }
+    .product-price {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .product-buy {
+      display: inline-block;
+      margin-top: 10px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(52,211,153,0.3);
+      border-radius: 8px;
+      color: var(--accent);
+      padding: 6px 16px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+    .product-buy:hover { background: rgba(52,211,153,0.25); }
+
+    /* ── TRIPS VIEW ──────────────────────────────────────────────────── */
+    .trips-view-header {
+      padding: 24px 20px 16px;
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .trips-view-header h2 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .trips-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .trips-action-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-secondary);
+      padding: 7px 14px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.18s;
+      font-family: inherit;
+      font-weight: 500;
+    }
+    .trips-action-btn:hover { border-color: rgba(255,255,255,0.2); color: var(--text); background: var(--surface-hover); }
+    .trips-action-btn.accent {
+      background: var(--accent-dim);
+      border-color: rgba(52,211,153,0.3);
+      color: var(--accent);
+    }
+    .trips-list {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 20px 40px;
+    }
+    .trips-empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-tertiary);
+    }
+    .trips-empty-icon { font-size: 2.5rem; margin-bottom: 12px; opacity: 0.4; }
+    .trips-empty p { font-size: 0.88rem; line-height: 1.5; }
+    .trip-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: all 0.15s;
+    }
+    .trip-card:hover { border-color: rgba(255,255,255,0.15); }
+    .trip-card-info { flex: 1; min-width: 0; }
+    .trip-card-name {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .trip-card-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+    .trip-card-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .trip-remove-btn {
+      background: rgba(248,113,113,0.1);
+      border: 1px solid rgba(248,113,113,0.2);
+      border-radius: 8px;
+      color: #f87171;
+      padding: 6px 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    .trip-remove-btn:hover { background: rgba(248,113,113,0.2); }
+    .trip-map-btn {
+      background: var(--accent-dim);
+      border: 1px solid rgba(52,211,153,0.25);
+      border-radius: 8px;
+      color: var(--accent);
+      padding: 6px 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    .trip-map-btn:hover { background: rgba(52,211,153,0.2); }
+
+    /* ── SAVE/BOOKMARK BUTTON ON CLUB CARDS ──────────────────────────── */
+    .card-save-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.15s;
+      color: var(--text-tertiary);
+      z-index: 5;
+    }
+    .card-save-btn:hover { background: rgba(0,0,0,0.7); color: #f87171; }
+    .card-save-btn.saved { color: #f87171; }
+    .card-action-btn-book {
+      background: rgba(129,140,248,0.12);
+      border-color: rgba(129,140,248,0.25);
+      color: #a5b4fc;
+      font-weight: 600;
+    }
+    .card-action-btn-book:hover { background: rgba(129,140,248,0.22); border-color: rgba(129,140,248,0.4); }
+    .card-action-btn-web-alt {
+      background: rgba(255,255,255,0.04);
+      border-color: rgba(255,255,255,0.1);
+      color: var(--text-secondary);
+      font-size: 0.68rem !important;
+    }
+    .card-action-btn-web-alt:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.18); }
+
+    /* ── TOURNAMENT SELECTOR ─────────────────────────────────────────── */
+    #tournament-selector {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 5px 10px;
+      font-size: 0.78rem;
+      font-family: inherit;
+      outline: none;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+
+    @media (max-width: 768px) {
+      .news-grid { grid-template-columns: 1fr; padding: 0 12px 80px; }
+      .shop-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); padding: 12px 12px 80px; gap: 10px; }
+      .product-img { height: 140px; }
+      .trips-list { padding: 0 12px 80px; }
+      .trips-view-header, .news-view-header, .shop-view-header { padding: 16px 12px 10px; }
+    }
+
+    /* ── AUTH MODAL ──────────────────────────────────────────────────── */
+    #auth-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 2500; display: none; align-items: center; justify-content: center; }
+    #auth-overlay.open { display: flex; }
+    #auth-modal { background: linear-gradient(145deg, #111, #0a0a0a); border: 1px solid rgba(52,211,153,0.2); border-radius: 20px; padding: 32px; max-width: 380px; width: 90%; }
+    .auth-tabs { display: flex; gap: 0; margin-bottom: 20px; }
+    .auth-tab { flex: 1; background: var(--surface); border: 1px solid var(--border); padding: 10px; text-align: center; cursor: pointer; color: var(--text-secondary); font-size: 0.82rem; font-weight: 600; font-family: inherit; transition: all 0.15s; }
+    .auth-tab:first-child { border-radius: 10px 0 0 10px; }
+    .auth-tab:last-child { border-radius: 0 10px 10px 0; }
+    .auth-tab.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+    .auth-input { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: var(--text); padding: 10px 14px; font-size: 0.85rem; margin-bottom: 10px; outline: none; font-family: inherit; box-sizing: border-box; }
+    .auth-input:focus { border-color: var(--accent); }
+    .auth-input::placeholder { color: var(--text-tertiary); }
+    .auth-submit { width: 100%; background: linear-gradient(135deg, #34d399, #059669); border: none; border-radius: 10px; color: #000; padding: 12px; font-size: 0.88rem; font-weight: 700; cursor: pointer; font-family: inherit; margin-top: 6px; }
+    .auth-submit:hover { opacity: 0.9; }
+    .auth-error { color: #f87171; font-size: 0.78rem; margin-top: 8px; text-align: center; }
+    .auth-success { color: var(--accent); font-size: 0.78rem; margin-top: 8px; text-align: center; }
+    .auth-close { position: absolute; top: 12px; right: 16px; background: none; border: none; color: var(--text-tertiary); font-size: 1.2rem; cursor: pointer; }
+    .auth-divider { text-align: center; color: var(--text-tertiary); font-size: 0.75rem; margin: 14px 0; position: relative; }
+    .auth-divider::before, .auth-divider::after { content: ''; position: absolute; top: 50%; width: 35%; height: 1px; background: var(--border); }
+    .auth-divider::before { left: 0; }
+    .auth-divider::after { right: 0; }
+
+    /* User menu dropdown */
+    #user-menu { position: relative; flex-shrink: 0; }
+    #user-dropdown { display: none; position: absolute; top: 100%; right: 0; margin-top: 6px; background: #161616; border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 6px; min-width: 160px; z-index: 1200; box-shadow: 0 8px 30px rgba(0,0,0,0.6); }
+    #user-dropdown.open { display: block; }
+    .user-dropdown-item { display: block; width: 100%; background: none; border: none; color: var(--text-secondary); padding: 8px 12px; font-size: 0.8rem; text-align: left; cursor: pointer; border-radius: 6px; font-family: inherit; transition: all 0.15s; }
+    .user-dropdown-item:hover { background: var(--surface-hover); color: var(--text); }
+
+  </style>
+</head>
+<body>
+
+<!-- Welcome popup (always English) -->
+<div id="welcome-overlay">
+  <div id="welcome-modal">
+    <span class="welcome-icon">🐰</span>
+    <div class="welcome-title">Welcome to GolfRabbit</div>
+    <div class="welcome-subtitle">
+      This site is created and designed by <strong>Philip Broberg</strong>.
+    </div>
+    <div class="welcome-note">
+      Content may vary from time to time during my AI vibe coding journey.
+    </div>
+    <button id="welcome-enter">Explore Golf Clubs</button>
+  </div>
+</div>
+
+<!-- Auth modal (always English) -->
+<div id="auth-overlay">
+  <div id="auth-modal" style="position:relative">
+    <button class="auth-close" id="auth-close">&#10005;</button>
+    <h3 style="color:var(--text);font-size:1.1rem;font-weight:700;margin-bottom:16px;text-align:center">🐰 GolfRabbit Account</h3>
+    <div class="auth-tabs">
+      <button class="auth-tab active" data-auth="login">Sign In</button>
+      <button class="auth-tab" data-auth="signup">Create Account</button>
+    </div>
+    <form id="auth-form">
+      <input class="auth-input" type="email" id="auth-email" placeholder="Email" required />
+      <input class="auth-input" type="password" id="auth-password" placeholder="Password" required />
+      <button class="auth-submit" type="submit" id="auth-submit-btn">Sign In</button>
+    </form>
+    <div id="auth-message"></div>
+  </div>
+</div>
+
+<header>
+  <div class="brand">
+    <div class="brand-icon">🐰</div>
+    <h1>GolfRabbit</h1>
+  </div>
+
+  <div class="nav-tabs">
+    <button class="nav-tab active" data-tab="courses" data-i18n="tab_courses">🗺 Courses</button>
+    <button class="nav-tab" data-tab="live" data-i18n="tab_live">🏆 Live <span class="live-dot"></span></button>
+    <button class="nav-tab" data-tab="news" data-i18n="tab_news">📰 News</button>
+    <button class="nav-tab" data-tab="shop" data-i18n="tab_shop">🛒 Shop</button>
+    <button class="nav-tab" data-tab="trips" data-i18n="tab_trips">🧳 Trips</button>
+  </div>
+
+  <div class="divider"></div>
+
+  <div id="search-wrap">
+    <span class="search-icon">⌕</span>
+    <input id="search" type="text" placeholder="Sök golfklubb..." autocomplete="off" data-i18n-placeholder="search_clubs" />
+  </div>
+
+  <div class="divider karta-only"></div>
+
+  <button id="filter-toggle" class="header-btn karta-only" data-i18n="filter">
+    ⚙ Filter
+    <span class="filter-dot"></span>
+  </button>
+
+  <div class="divider karta-only"></div>
+
+  <button id="time-btn" class="time-btn-inactive karta-only" data-i18n="pick_time">
+    🕐 Välj tid
+  </button>
+
+  <div id="time-popover">
+    <div class="tp-label" data-i18n="date_time_title">Datum & tid för spel</div>
+    <div class="tp-row">
+      <div class="tp-field">
+        <label data-i18n="date_label">Datum</label>
+        <input type="date" id="tp-date" />
+      </div>
+      <div class="tp-field">
+        <label data-i18n="time_label">Starttid</label>
+        <input type="time" id="tp-time" value="10:00" />
+      </div>
+    </div>
+    <div id="tp-result"></div>
+    <button id="tp-clear" data-i18n="clear">Rensa</button>
+  </div>
+
+  <button id="rankings-btn" class="karta-only" data-i18n="rankings">🏆 Rankningar</button>
+
+  <button id="locate-btn" class="karta-only">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+    <span data-i18n="near_me">Nära mig</span>
+  </button>
+
+  <div class="lang-switcher">
+    <button class="lang-btn active" data-lang="sv" title="Svenska">🇸🇪</button>
+    <button class="lang-btn" data-lang="da" title="Dansk">🇩🇰</button>
+    <button class="lang-btn" data-lang="en" title="English">🇺🇸</button>
+  </div>
+
+  <div id="user-menu">
+    <button id="user-btn" class="header-btn" data-i18n="login">👤 Logga in</button>
+    <div id="user-dropdown">
+      <button class="user-dropdown-item" id="user-logout-btn">Logout</button>
+    </div>
+  </div>
+
+  <div id="status" class="loading karta-only" data-i18n="loading">Laddar…</div>
+</header>
+
+<!-- Filter bar (collapsible) -->
+<div id="filter-bar" class="open">
+  <div class="filter-bar-top">
+    <span class="filter-bar-title" data-i18n="filter_clubs">Filtrera klubbar</span>
+    <button id="clear-filters-btn" data-i18n="clear_filters">✕ Rensa filter</button>
+  </div>
+  <div class="filter-section">
+    <span class="filter-label" data-i18n="country">Land</span>
+    <div class="filter-pills" id="country-filters">
+      <button class="pill active" data-country="all" data-i18n="all">Alla</button>
+      <button class="pill" data-country="SE">🇸🇪 Sverige</button>
+      <button class="pill" data-country="DK">🇩🇰 Danmark</button>
+      <button class="pill" data-country="ES">🇪🇸 Spanien</button>
+    </div>
+  </div>
+  <div class="filter-section">
+    <span class="filter-label" data-i18n="course_type">Bantyp</span>
+    <div class="filter-pills" id="type-filters">
+      <button class="pill active" data-type="all" data-i18n="all">Alla</button>
+      <button class="pill" data-type="park" data-i18n="park">🌳 Park</button>
+      <button class="pill" data-type="kust" data-i18n="coast">🌊 Kust</button>
+      <button class="pill" data-type="skog" data-i18n="forest">🌲 Skog</button>
+      <button class="pill" data-type="links" data-i18n="links">🌾 Links</button>
+      <button class="pill" data-type="berg" data-i18n="mountain">⛰ Berg</button>
+    </div>
+    <div class="filter-sep"></div>
+    <div class="filter-pills">
+      <button class="pill" id="lunch-toggle" data-i18n="lunch">🍽 Lunch</button>
+      <button class="pill" id="rated-toggle" data-i18n="rated">⭐ Recenserade</button>
+    </div>
+  </div>
+</div>
+
+<!-- Rankings modal -->
+<div id="rankings-overlay">
+  <div id="rankings-modal">
+    <div id="rankings-modal-header">
+      <div>
+        <h2 data-i18n="rankings_title">🏆 Rankningar</h2>
+        <p data-i18n="rankings_sub">Topp 15 klubbar per kategori</p>
+      </div>
+      <button id="rankings-close">✕</button>
+    </div>
+    <div id="rankings-tabs"></div>
+    <div id="rankings-body"></div>
+  </div>
+</div>
+
+<div class="main">
+  <div id="sidebar">
+    <div id="sidebar-header">
+      <div id="sidebar-title" data-i18n="golf_clubs">Golfklubbar</div>
+      <div id="sidebar-count-line">Visar <strong><span id="count">0</span></strong> klubbar</div>
+    </div>
+    <div id="club-list"></div>
+    <div id="no-results" data-i18n="no_match">Inga klubbar matchar</div>
+  </div>
+  <div id="sidebar-resize"></div>
+  <div id="map">
+    <div id="sidebar-toggle" title="Visa/dölj sidopanel">◀</div>
+  </div>
+</div>
+
+<!-- Masters View -->
+<div id="masters-view">
+  <div class="masters-layout">
+    <div class="lb-panel">
+      <div class="lb-header">
+        <div class="lb-header-left">
+          <div>
+            <div class="lb-title">⛳ PGA Tour <span class="masters-badge">Live</span></div>
+            <select id="tournament-selector" style="display:none"></select>
+            <div class="lb-subtitle" id="lb-round-info" data-i18n="loading_tournament">Laddar turnering...</div>
+          </div>
+        </div>
+        <div class="lb-refresh">
+          <span class="lb-refresh-dot"></span>
+          <span id="lb-refresh-text" data-i18n="updated_live">Uppdateras live</span>
+        </div>
+      </div>
+      <div class="lb-search-wrap">
+        <input class="lb-search" id="lb-search" type="text" placeholder="Sök spelare..." autocomplete="off" data-i18n-placeholder="search_players" />
+      </div>
+      <div class="lb-table-wrap">
+        <div class="lb-loading" id="lb-loading">
+          <div class="spinner"></div>
+          <div data-i18n="fetching_lb">Hämtar leaderboard...</div>
+        </div>
+        <table class="lb-table" id="lb-table" style="display:none">
+          <thead>
+            <tr>
+              <th data-i18n="pos">Pos</th>
+              <th data-i18n="player">Spelare</th>
+              <th class="col-score" data-i18n="score">Score</th>
+              <th class="col-today" data-i18n="today">Idag</th>
+              <th class="col-thru" data-i18n="hole">Hål</th>
+              <th class="col-round">R1</th>
+              <th class="col-round">R2</th>
+              <th class="col-round">R3</th>
+              <th class="col-round">R4</th>
+            </tr>
+          </thead>
+          <tbody id="lb-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="chat-panel">
+      <div class="chat-header">
+        <span class="chat-header-icon">💬</span>
+        <span class="chat-header-title" data-i18n="chat_title">Masters Chat</span>
+        <span class="chat-header-count" data-i18n="chat_subtitle">Live diskussion</span>
+      </div>
+      <div class="chat-body" id="chat-body">
+        <div class="chat-placeholder">
+          <div class="chat-placeholder-icon">💬</div>
+          <p>Laddar chatt...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- News View -->
+<div id="view-news">
+  <div class="news-view-header">
+    <h2 data-i18n="news_title">Golf News</h2>
+    <p data-i18n="news_subtitle">Latest headlines from the golf world</p>
+  </div>
+  <div id="news-grid" class="news-grid">
+    <div class="news-loading" id="news-loading">
+      <div class="spinner" style="display:inline-block;width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:12px;"></div>
+      <div data-i18n="loading">Laddar...</div>
+    </div>
+  </div>
+</div>
+
+<!-- Shop View -->
+<div id="view-shop">
+  <div class="shop-view-header">
+    <h2 data-i18n="shop_title">Golf Shop</h2>
+    <p data-i18n="shop_subtitle">Handpicked gear from top brands</p>
+    <div class="shop-categories" id="shop-categories"></div>
+  </div>
+  <div id="shop-grid" class="shop-grid"></div>
+</div>
+
+<!-- Trips View -->
+<div id="view-trips">
+  <div class="trips-view-header">
+    <h2 data-i18n="trips_title">My Trips</h2>
+    <div class="trips-actions">
+      <button class="trips-action-btn accent" id="trips-share-btn" data-i18n="share_trip">Share trip</button>
+      <button class="trips-action-btn" id="trips-clear-btn" data-i18n="clear_all">Clear all</button>
+    </div>
+  </div>
+  <div class="trips-list" id="trips-list"></div>
+</div>
+
+<!-- Mobile map/list toggle -->
+<div id="mobile-view-toggle">
+  <button class="active" data-view="list" data-i18n="list">📋 Lista</button>
+  <button data-view="map" data-i18n="map_view">🗺 Karta</button>
+</div>
+
+<!-- Mobile bottom nav -->
+<div id="mobile-bottom-nav">
+  <button class="bottom-tab active" data-tab="courses">
+    <span class="tab-icon">🗺</span>
+    <span data-i18n="tab_courses_short">Courses</span>
+  </button>
+  <button class="bottom-tab" data-tab="live">
+    <span class="tab-icon">🏆</span>
+    <span data-i18n="tab_live_short">Live</span>
+  </button>
+  <button class="bottom-tab" data-tab="news">
+    <span class="tab-icon">📰</span>
+    <span data-i18n="tab_news_short">News</span>
+  </button>
+  <button class="bottom-tab" data-tab="shop">
+    <span class="tab-icon">🛒</span>
+    <span data-i18n="tab_shop_short">Shop</span>
+  </button>
+  <button class="bottom-tab" data-tab="trips">
+    <span class="tab-icon">🧳</span>
+    <span data-i18n="tab_trips_short">Trips</span>
+  </button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.min.js"></script>
+<script>
+// ── Translations ──────────────────────────────────────────────────────────
+const translations = {
+  sv: {
+    search_clubs: 'Sök golfklubb...',
+    search_players: 'Sök spelare...',
+    filter: '⚙ Filter',
+    pick_time: '🕐 Välj tid',
+    rankings: '🏆 Rankningar',
+    near_me: 'Nära mig',
+    loading: 'Laddar…',
+    filter_clubs: 'Filtrera klubbar',
+    clear_filters: '✕ Rensa filter',
+    num_holes: 'Antal hål',
+    all: 'Alla',
+    holes_9: '9 hål',
+    holes_18: '18 hål',
+    holes_27: '27+ hål',
+    course_type: 'Bantyp',
+    park: '🌳 Park',
+    coast: '🌊 Kust',
+    forest: '🌲 Skog',
+    links: '🌾 Links',
+    mountain: '⛰ Berg',
+    lunch: '🍽 Lunch',
+    rated: '⭐ Recenserade',
+    golf_clubs: 'Golfklubbar',
+    showing: 'Visar',
+    clubs: 'klubbar',
+    no_match: 'Inga klubbar matchar',
+    show_sidebar: 'Visa sidopanel',
+    hide_sidebar: 'Dölj sidopanel',
+    web: '🌐 Webb',
+    video: '▶ Video',
+    map_link: '⭐ Karta',
+    greenfee: '💰 Greenfee',
+    rankings_title: '🏆 Rankningar',
+    rankings_sub: 'Topp 15 klubbar per kategori',
+    date_time_title: 'Datum & tid för spel',
+    date_label: 'Datum',
+    time_label: 'Starttid',
+    clear: 'Rensa',
+    updated_live: 'Uppdateras live',
+    loading_tournament: 'Laddar turnering...',
+    fetching_lb: 'Hämtar leaderboard...',
+    pos: 'Pos',
+    player: 'Spelare',
+    score: 'Score',
+    today: 'Idag',
+    hole: 'Hål',
+    round: 'Runda',
+    ongoing: 'Pågår',
+    updated: 'Uppdaterad',
+    chat_title: 'Masters Chat',
+    chat_subtitle: 'Live diskussion',
+    chat_footer: '💬 Öppen diskussion — var vänlig och respektfull',
+    tab_courses: '🗺 Banor',
+    tab_live: '🏆 Live',
+    tab_news: '📰 Nyheter',
+    tab_shop: '🛒 Shop',
+    tab_trips: '🧳 Resor',
+    tab_courses_short: 'Banor',
+    tab_live_short: 'Live',
+    tab_news_short: 'Nyheter',
+    tab_shop_short: 'Shop',
+    tab_trips_short: 'Resor',
+    list: '📋 Lista',
+    map_view: '🗺 Karta',
+    clubs_count: 'klubbar',
+    country: 'Land',
+    no_tournament: 'Ingen aktiv turnering hittad',
+    lb_error: 'Kunde inte hämta leaderboard. Försöker igen...',
+    geo_unsupported: 'Geolokalisering stöds inte.',
+    geo_error: 'Kunde inte hämta din position.',
+    your_pos: 'Din position',
+    season_high: 'Högsäsong (jun–aug)',
+    season_mid: 'Mellansäsong',
+    season_low: 'Lågsäsong / stängt',
+    weekend: 'Helg',
+    friday: 'Fredag',
+    weekday: 'Vardag',
+    early_morning: 'Tidig morgon',
+    twilight: 'Twilight',
+    forenoon: 'Förmiddag',
+    afternoon: 'Eftermiddag',
+    budget_course: 'Enkel bana',
+    standard_club: 'Medelklubb',
+    premium_club: 'Premiumklubb',
+    price_disclaimer: '⚠ Uppskattade priser baserade på typiska svenska greenfee-strukturer. Bekräfta alltid med klubben.',
+    season_open: '🟢 Säsong öppen',
+    off_season: 'Utanför säsong',
+    search_greenfee: 'Sök greenfee-pris →',
+    reviews: '⭐ Recensioner',
+    youtube: '▶ YouTube',
+    loading_error: 'Fel vid laddning',
+    rank_popular: '🔥 Mest Populära',
+    rank_course: '⛳ Bästa Bana',
+    rank_lunch: '🍽 Bäst Lunch',
+    rank_reviews: '⭐ Recensioner',
+    rank_greenfee: '💰 Greenfee',
+    rank_established: '🏅 Etablerade',
+    no_data: 'Ingen data tillgänglig för denna kategori',
+    news_title: 'Golf Nyheter',
+    news_subtitle: 'Senaste rubrikerna från golfvärlden',
+    read_more: 'Läs mer',
+    shop_title: 'Golf Shop',
+    shop_subtitle: 'Handplockat från toppmärken',
+    shop_all: 'Alla',
+    shop_clubs_cat: 'Klubbor',
+    shop_clothing: 'Kläder',
+    shop_bags: 'Bagar',
+    shop_shoes: 'Skor',
+    shop_accessories: 'Tillbehör',
+    shop_btn: 'Shoppa',
+    trips_title: 'Mina Resor',
+    share_trip: 'Dela resa',
+    clear_all: 'Rensa alla',
+    trips_empty: 'Spara klubbar från Banor-fliken för att planera din resa',
+    trip_removed: 'Borttagen',
+    trip_shared: 'Länk kopierad!',
+    save_trip: 'Spara',
+    book: 'Boka',
+    club_site: '🔗 Hemsida',
+    shop_featured: 'Utvald',
+    saved: 'Sparad',
+    login: '👤 Logga in',
+    logout: 'Logga ut',
+  },
+  da: {
+    search_clubs: 'Søg golfklub...',
+    search_players: 'Søg spiller...',
+    filter: '⚙ Filter',
+    pick_time: '🕐 Vælg tid',
+    rankings: '🏆 Ranglister',
+    near_me: 'Tæt på mig',
+    loading: 'Indlæser…',
+    filter_clubs: 'Filtrer klubber',
+    clear_filters: '✕ Ryd filter',
+    num_holes: 'Antal huller',
+    all: 'Alle',
+    holes_9: '9 huller',
+    holes_18: '18 huller',
+    holes_27: '27+ huller',
+    course_type: 'Banetype',
+    park: '🌳 Park',
+    coast: '🌊 Kyst',
+    forest: '🌲 Skov',
+    links: '🌾 Links',
+    mountain: '⛰ Bjerg',
+    lunch: '🍽 Frokost',
+    rated: '⭐ Bedømte',
+    golf_clubs: 'Golfklubber',
+    showing: 'Viser',
+    clubs: 'klubber',
+    no_match: 'Ingen klubber matcher',
+    show_sidebar: 'Vis sidepanel',
+    hide_sidebar: 'Skjul sidepanel',
+    web: '🌐 Web',
+    video: '▶ Video',
+    map_link: '⭐ Kort',
+    greenfee: '💰 Greenfee',
+    rankings_title: '🏆 Ranglister',
+    rankings_sub: 'Top 15 klubber per kategori',
+    date_time_title: 'Dato & tid for spil',
+    date_label: 'Dato',
+    time_label: 'Starttid',
+    clear: 'Ryd',
+    updated_live: 'Opdateres live',
+    loading_tournament: 'Indlæser turnering...',
+    fetching_lb: 'Henter leaderboard...',
+    pos: 'Pos',
+    player: 'Spiller',
+    score: 'Score',
+    today: 'I dag',
+    hole: 'Hul',
+    round: 'Runde',
+    ongoing: 'I gang',
+    updated: 'Opdateret',
+    chat_title: 'Masters Chat',
+    chat_subtitle: 'Live diskussion',
+    chat_footer: '💬 Åben diskussion — vær venlig og respektfuld',
+    tab_courses: '🗺 Baner',
+    tab_live: '🏆 Live',
+    tab_news: '📰 Nyheder',
+    tab_shop: '🛒 Shop',
+    tab_trips: '🧳 Rejser',
+    tab_courses_short: 'Baner',
+    tab_live_short: 'Live',
+    tab_news_short: 'Nyheder',
+    tab_shop_short: 'Shop',
+    tab_trips_short: 'Rejser',
+    list: '📋 Liste',
+    map_view: '🗺 Kort',
+    clubs_count: 'klubber',
+    country: 'Land',
+    no_tournament: 'Ingen aktiv turnering fundet',
+    lb_error: 'Kunne ikke hente leaderboard. Prøver igen...',
+    geo_unsupported: 'Geolokalisering understøttes ikke.',
+    geo_error: 'Kunne ikke hente din position.',
+    your_pos: 'Din position',
+    season_high: 'Højsæson (jun–aug)',
+    season_mid: 'Mellemsæson',
+    season_low: 'Lavsæson / lukket',
+    weekend: 'Weekend',
+    friday: 'Fredag',
+    weekday: 'Hverdag',
+    early_morning: 'Tidlig morgen',
+    twilight: 'Twilight',
+    forenoon: 'Formiddag',
+    afternoon: 'Eftermiddag',
+    budget_course: 'Enkel bane',
+    standard_club: 'Standardklub',
+    premium_club: 'Premiumklub',
+    price_disclaimer: '⚠ Estimerede priser baseret på typiske svenske greenfee-strukturer. Bekræft altid med klubben.',
+    season_open: '🟢 Sæson åben',
+    off_season: 'Uden for sæson',
+    search_greenfee: 'Søg greenfee-pris →',
+    reviews: '⭐ Anmeldelser',
+    youtube: '▶ YouTube',
+    loading_error: 'Fejl ved indlæsning',
+    rank_popular: '🔥 Mest Populære',
+    rank_course: '⛳ Bedste Bane',
+    rank_lunch: '🍽 Bedst Frokost',
+    rank_reviews: '⭐ Anmeldelser',
+    rank_greenfee: '💰 Greenfee',
+    rank_established: '🏅 Etablerede',
+    no_data: 'Ingen data tilgængelig for denne kategori',
+    news_title: 'Golf Nyheder',
+    news_subtitle: 'Seneste overskrifter fra golfverdenen',
+    read_more: 'Læs mere',
+    shop_title: 'Golf Shop',
+    shop_subtitle: 'Håndplukket udstyr fra topmærker',
+    shop_all: 'Alle',
+    shop_clubs_cat: 'Køller',
+    shop_clothing: 'Tøj',
+    shop_bags: 'Tasker',
+    shop_shoes: 'Sko',
+    shop_accessories: 'Tilbehør',
+    shop_btn: 'Shop',
+    trips_title: 'Mine Rejser',
+    share_trip: 'Del rejse',
+    clear_all: 'Ryd alle',
+    trips_empty: 'Gem klubber fra Baner-fanen for at planlægge din rejse',
+    trip_removed: 'Fjernet',
+    trip_shared: 'Link kopieret!',
+    save_trip: 'Gem',
+    book: 'Book',
+    club_site: '🔗 Hjemmeside',
+    shop_featured: 'Udvalgt',
+    saved: 'Gemt',
+    login: '👤 Log ind',
+    logout: 'Log ud',
+  },
+  en: {
+    search_clubs: 'Search golf club...',
+    search_players: 'Search player...',
+    filter: '⚙ Filter',
+    pick_time: '🕐 Pick time',
+    rankings: '🏆 Rankings',
+    near_me: 'Near me',
+    loading: 'Loading…',
+    filter_clubs: 'Filter clubs',
+    clear_filters: '✕ Clear filters',
+    num_holes: 'Holes',
+    all: 'All',
+    holes_9: '9 holes',
+    holes_18: '18 holes',
+    holes_27: '27+ holes',
+    course_type: 'Course type',
+    park: '🌳 Park',
+    coast: '🌊 Coastal',
+    forest: '🌲 Forest',
+    links: '🌾 Links',
+    mountain: '⛰ Mountain',
+    lunch: '🍽 Lunch',
+    rated: '⭐ Rated',
+    golf_clubs: 'Golf Clubs',
+    showing: 'Showing',
+    clubs: 'clubs',
+    no_match: 'No clubs match',
+    show_sidebar: 'Show sidebar',
+    hide_sidebar: 'Hide sidebar',
+    web: '🌐 Web',
+    video: '▶ Video',
+    map_link: '⭐ Map',
+    greenfee: '💰 Greenfee',
+    rankings_title: '🏆 Rankings',
+    rankings_sub: 'Top 15 clubs per category',
+    date_time_title: 'Date & time for play',
+    date_label: 'Date',
+    time_label: 'Tee time',
+    clear: 'Clear',
+    updated_live: 'Live updates',
+    loading_tournament: 'Loading tournament...',
+    fetching_lb: 'Fetching leaderboard...',
+    pos: 'Pos',
+    player: 'Player',
+    score: 'Score',
+    today: 'Today',
+    hole: 'Thru',
+    round: 'Round',
+    ongoing: 'In progress',
+    updated: 'Updated',
+    chat_title: 'Masters Chat',
+    chat_subtitle: 'Live discussion',
+    chat_footer: '💬 Open discussion — be kind and respectful',
+    tab_courses: '🗺 Courses',
+    tab_live: '🏆 Live',
+    tab_news: '📰 News',
+    tab_shop: '🛒 Shop',
+    tab_trips: '🧳 Trips',
+    tab_courses_short: 'Courses',
+    tab_live_short: 'Live',
+    tab_news_short: 'News',
+    tab_shop_short: 'Shop',
+    tab_trips_short: 'Trips',
+    list: '📋 List',
+    map_view: '🗺 Map',
+    clubs_count: 'clubs',
+    country: 'Country',
+    no_tournament: 'No active tournament found',
+    lb_error: 'Could not fetch leaderboard. Retrying...',
+    geo_unsupported: 'Geolocation is not supported.',
+    geo_error: 'Could not get your position.',
+    your_pos: 'Your position',
+    season_high: 'Peak season (Jun–Aug)',
+    season_mid: 'Mid season',
+    season_low: 'Off season / closed',
+    weekend: 'Weekend',
+    friday: 'Friday',
+    weekday: 'Weekday',
+    early_morning: 'Early morning',
+    twilight: 'Twilight',
+    forenoon: 'Morning',
+    afternoon: 'Afternoon',
+    budget_course: 'Budget course',
+    standard_club: 'Standard club',
+    premium_club: 'Premium club',
+    price_disclaimer: '⚠ Estimated prices based on typical Swedish greenfee structures. Always confirm with the club.',
+    season_open: '🟢 Season open',
+    off_season: 'Off season',
+    search_greenfee: 'Search greenfee price →',
+    reviews: '⭐ Reviews',
+    youtube: '▶ YouTube',
+    loading_error: 'Loading error',
+    rank_popular: '🔥 Most Popular',
+    rank_course: '⛳ Best Course',
+    rank_lunch: '🍽 Best Lunch',
+    rank_reviews: '⭐ Reviews',
+    rank_greenfee: '💰 Greenfee',
+    rank_established: '🏅 Established',
+    no_data: 'No data available for this category',
+    news_title: 'Golf News',
+    news_subtitle: 'Latest headlines from the golf world',
+    read_more: 'Read more',
+    shop_title: 'Golf Shop',
+    shop_subtitle: 'Handpicked gear from top brands',
+    shop_all: 'All',
+    shop_clubs_cat: 'Clubs',
+    shop_clothing: 'Clothing',
+    shop_bags: 'Bags',
+    shop_shoes: 'Shoes',
+    shop_accessories: 'Accessories',
+    shop_btn: 'Shop',
+    trips_title: 'My Trips',
+    share_trip: 'Share trip',
+    clear_all: 'Clear all',
+    trips_empty: 'Save clubs from the Courses tab to plan your trip',
+    trip_removed: 'Removed',
+    trip_shared: 'Link copied!',
+    save_trip: 'Save',
+    book: 'Book',
+    club_site: '🔗 Website',
+    shop_featured: 'Featured',
+    saved: 'Saved',
+    login: '👤 Login',
+    logout: 'Logout',
+  }
+};
+
+let currentLang = localStorage.getItem('golf_lang') || 'sv';
+
+// ── Supabase Auth ─────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://ltnfegonurtqeadzonzm.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx0bmZlZ29udXJ0cWVhZHpvbnptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MDk1MzAsImV4cCI6MjA5MTM4NTUzMH0.UYbUIa2sxdazPZJg3nSu3HjYfh9SMgk6e2GyCoaXta8';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let currentUser = null;
+
+function t(key) { return (translations[currentLang] || translations.sv)[key] || key; }
+
+function applyLanguage(lang) {
+  currentLang = lang;
+  localStorage.setItem('golf_lang', lang);
+
+  // Update all data-i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    // Special handling for tab_live to preserve live-dot span
+    if (key === 'tab_live') {
+      const dot = el.querySelector('.live-dot');
+      el.textContent = t(key) + ' ';
+      if (dot) el.appendChild(dot);
+    } else {
+      el.textContent = t(key);
+    }
+  });
+
+  // Update all data-i18n-placeholder elements
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    el.placeholder = t(el.dataset.i18nPlaceholder);
+  });
+
+  // Update active lang button
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === lang);
+  });
+
+  // Re-render dynamic content
+  if (typeof render === 'function' && allClubs && allClubs.length) render();
+  if (typeof renderLeaderboard === 'function' && mastersDataLoaded) renderLeaderboard();
+}
+
+// Language switcher event listeners
+document.querySelectorAll('.lang-btn').forEach(btn => {
+  btn.addEventListener('click', () => applyLanguage(btn.dataset.lang));
+});
+
+// Apply saved language on load (deferred to after DOM-dependent code initializes)
+if (currentLang !== 'sv') {
+  // Will be called after all functions are defined, at end of script
+  window._pendingLangApply = true;
+}
+
+// ── Welcome popup ─────────────────────────────────────────────────────────
+(function() {
+  const overlay = document.getElementById('welcome-overlay');
+  if (!overlay) return;
+  const dismiss = () => {
+    overlay.style.transition = 'opacity 0.3s ease';
+    overlay.style.opacity = '0';
+    setTimeout(() => overlay.remove(), 300);
+  };
+  document.getElementById('welcome-enter').addEventListener('click', dismiss);
+  overlay.addEventListener('click', e => { if (e.target === overlay) dismiss(); });
+})();
+
+// ── Map ────────────────────────────────────────────────────────────────────
+const map = L.map('map', { center: [54, 12], zoom: 4, zoomControl: true });
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  maxZoom: 19,
+  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>'
+}).addTo(map);
+
+// ── Season ─────────────────────────────────────────────────────────────────
+const month = new Date().getMonth();
+const inSeason = month >= 3 && month <= 9;
+
+// ── Icons ──────────────────────────────────────────────────────────────────
+const pinIcon = L.divIcon({
+  className: '',
+  html: `<div class="g-pin"><span>⛳</span></div>`,
+  iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -36]
+});
+
+function clusterIcon(cluster) {
+  const n = cluster.getChildCount();
+  const cls = n >= 50 ? 'lg' : n >= 15 ? 'md' : 'sm';
+  const size = n >= 50 ? 52 : n >= 15 ? 44 : 36;
+  return L.divIcon({
+    html: `<div class="g-cluster ${cls}">${n}</div>`,
+    className: '', iconSize: [size, size]
+  });
+}
+
+// ── Cluster group ──────────────────────────────────────────────────────────
+const clusterGroup = L.markerClusterGroup({
+  maxClusterRadius: 50,
+  spiderfyOnMaxZoom: true,
+  showCoverageOnHover: false,
+  zoomToBoundsOnClick: true,
+  iconCreateFunction: clusterIcon
+});
+map.addLayer(clusterGroup);
+
+// ── State ──────────────────────────────────────────────────────────────────
+let allClubs = [], markers = [];
+let activeHoles = 'all';
+let activeCourseType = 'all';
+let activeCountry = 'all';
+let showLunchOnly = false;
+let showRatedOnly = false;
+let activeCard = null;
+let filterBarOpen = true;
+let savedTrips = JSON.parse(localStorage.getItem('golf_saved_trips') || '[]');
+
+// ── Cache & fetch ──────────────────────────────────────────────────────────
+const CACHE_KEY = 'golf_multi_v1';
+const CACHE_TTL = 24 * 60 * 60 * 1000;
+
+function detectCountry(lat, lon) {
+  // Spain first (no overlap)
+  if (lat >= 36 && lat <= 43.8 && lon >= -9.5 && lon <= 3.5) return 'ES';
+  // Denmark: mostly lon < 13 and lat < 57.8
+  if (lat >= 54.5 && lat <= 57.8 && lon >= 8 && lon <= 13) return 'DK';
+  // Sweden: everything else in Scandinavia
+  if (lat >= 55 && lat <= 69 && lon >= 11 && lon <= 24) return 'SE';
+  // Catch Danish islands (Bornholm etc)
+  if (lat >= 54.5 && lat <= 56 && lon >= 14 && lon <= 15.5) return 'DK';
+  return null; // filter out Norway, Finland, etc.
+}
+
+async function loadClubs() {
+  const raw = localStorage.getItem(CACHE_KEY);
+  if (raw) {
+    try {
+      const { ts, data } = JSON.parse(raw);
+      if (Date.now() - ts < CACHE_TTL) return data;
+    } catch(e) {}
+  }
+
+  // Use bounding boxes instead of area queries (much faster)
+  // Sweden: 55-69N, 11-24E | Denmark: 54.5-57.8N, 8-15.5E | Spain: 36-43.8N, -9.5-3.5E
+  const q = `
+    [out:json][timeout:120];
+    (
+      node["leisure"="golf_course"](54.5,8,69,24);
+      way["leisure"="golf_course"](54.5,8,69,24);
+      relation["leisure"="golf_course"](54.5,8,69,24);
+      node["leisure"="golf_course"](36,-9.5,43.8,3.5);
+      way["leisure"="golf_course"](36,-9.5,43.8,3.5);
+      relation["leisure"="golf_course"](36,-9.5,43.8,3.5);
+    );
+    out center tags;
+  `;
+
+  const mirrors = [
+    'https://overpass-api.de/api/interpreter',
+    'https://overpass.kumi.systems/api/interpreter',
+    'https://maps.mail.ru/osm/tools/overpass/api/interpreter'
+  ];
+  let json = null;
+  for (const mirror of mirrors) {
+    try {
+      const res = await fetch(mirror, { method: 'POST', body: 'data=' + encodeURIComponent(q) });
+      const text = await res.text();
+      if (text.trim().startsWith('<')) continue; // XML error response, try next
+      json = JSON.parse(text);
+      break;
+    } catch(e) { continue; }
+  }
+  if (!json) {
+    // Fallback: try old Swedish-only cache
+    const oldRaw = localStorage.getItem('golf_se_v3');
+    if (oldRaw) {
+      try {
+        const { data } = JSON.parse(oldRaw);
+        if (data && data.length) {
+          console.log('Falling back to cached Swedish data (' + data.length + ' clubs)');
+          // Add country field to old cached data
+          const enriched = data.map(c => ({ ...c, country: c.country || detectCountry(c.lat, c.lon) || 'SE' }));
+          try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data: enriched })); } catch(e) {}
+          return enriched;
+        }
+      } catch(e) {}
+    }
+    throw new Error('All Overpass mirrors failed');
+  }
+
+  const data = (json.elements || []).map(el => {
+    const lat = el.type === 'node' ? el.lat : el.center?.lat;
+    const lon = el.type === 'node' ? el.lon : el.center?.lon;
+    if (!lat || !lon) return null;
+
+    const tags = el.tags || {};
+    // Detect lunch: OSM restaurant/cafe tags or description mentions
+    const desc = (tags.description || '').toLowerCase();
+    const hasLunch = !!(
+      tags['amenity:restaurant'] || tags.restaurant ||
+      tags['food'] === 'yes' || tags['cuisine'] ||
+      tags['cafe'] === 'yes' || tags['amenity'] === 'restaurant' ||
+      desc.includes('restaurang') || desc.includes('lunch') || desc.includes('mat')
+    );
+
+    // Rating from OSM stars tag (rare but exists)
+    const stars = tags.stars ? parseFloat(tags.stars) : null;
+    const rating = tags.rating ? parseFloat(tags.rating) : null;
+
+    // Greenfee from OSM (very rare, but some clubs tag it)
+    const greenfee = tags['charge'] || tags['green_fee'] || tags['golf:green_fee'] || tags['fee:amount'] || null;
+
+    // Course type detection
+    const name = (tags.name || '').toLowerCase();
+    const osmType = (tags['golf:type'] || tags['golf:course_type'] || '').toLowerCase();
+    function detectCourseType() {
+      // OSM explicit tag first
+      if (osmType.includes('links')) return 'links';
+      if (osmType.includes('park')) return 'park';
+      if (osmType.includes('forest') || osmType.includes('wood') || osmType.includes('skog')) return 'skog';
+      if (osmType.includes('heath')) return 'hed';
+      if (osmType.includes('coast') || osmType.includes('sea') || osmType.includes('marine')) return 'kust';
+      if (osmType.includes('mountain') || osmType.includes('highland') || osmType.includes('berg')) return 'berg';
+      // Detect from description or name
+      const combined = desc + ' ' + name;
+      if (combined.match(/hav|kust|strand|sjö|vatten|marin|coast|sea|lake/)) return 'kust';
+      if (combined.match(/skog|forest|wood|träd/)) return 'skog';
+      if (combined.match(/park|slott|herrgård|manor|castle/)) return 'park';
+      if (combined.match(/links|sandd|dyn|heath/)) return 'links';
+      if (combined.match(/berg|mountain|fjäll|dal|valley/)) return 'berg';
+      return null;
+    }
+    const courseType = detectCourseType();
+
+    return {
+      id: el.id,
+      name: tags.name || 'Okänd golfklubb',
+      lat, lon,
+      holes: tags['golf:holes'] || null,
+      phone: tags.phone || tags['contact:phone'] || null,
+      website: tags.website || tags['contact:website'] || tags.url || tags['contact:url'] || null,
+      hasLunch,
+      stars: stars || rating || null,
+      greenfee,
+      courseType,
+      country: detectCountry(lat, lon)
+    };
+  }).filter(c => c && c.country); // filter out null entries and non-target countries
+
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data })); } catch(e) {}
+  return data;
+}
+
+// ── Course type config ─────────────────────────────────────────────────────
+const COURSE_TYPES = {
+  park:  { label: '🌳 Parkbana',  style: 'background:rgba(52,211,153,0.1);color:#34d399' },
+  kust:  { label: '🌊 Kustbana',  style: 'background:rgba(56,189,248,0.1);color:#38bdf8' },
+  skog:  { label: '🌲 Skogsbana', style: 'background:rgba(134,239,172,0.1);color:#86efac' },
+  links: { label: '🌾 Linksbana', style: 'background:rgba(251,191,36,0.1);color:#fbbf24' },
+  berg:  { label: '⛰ Bergsbana', style: 'background:rgba(203,213,225,0.1);color:#94a3b8' },
+  hed:   { label: '🍂 Hedbana',   style: 'background:rgba(217,119,6,0.1);color:#d97706' },
+};
+
+function courseTypeTag(club) {
+  const ct = club.courseType && COURSE_TYPES[club.courseType];
+  if (!ct) return '';
+  return `<span class="tag" style="${ct.style}">${ct.label}</span>`;
+}
+
+// ── Stars renderer ─────────────────────────────────────────────────────────
+function renderStars(n) {
+  const full = Math.round(n);
+  return '★'.repeat(full) + '☆'.repeat(5 - full);
+}
+
+// ── Popup ──────────────────────────────────────────────────────────────────
+function buildPopup(club) {
+  const gmLink = `https://www.google.com/maps/search/${encodeURIComponent(club.name + ' golfklubb Sverige')}`;
+  const ytLink = `https://www.youtube.com/results?search_query=${encodeURIComponent(club.name + ' golf course Sweden')}`;
+
+  let tags = '';
+  if (club.holes) tags += `<span class="tag tag-holes">⬡ ${club.holes} hål</span>`;
+  if (club.hasLunch) tags += `<span class="tag tag-lunch">${t('lunch')}</span>`;
+  tags += courseTypeTag(club);
+  tags += inSeason
+    ? `<span class="tag tag-season-open">${t('season_open')}</span>`
+    : `<span class="tag tag-season-closed">${t('off_season')}</span>`;
+  if (club.greenfee) tags += `<span class="tag tag-gf-budget">💰 ${club.greenfee}</span>`;
+  tags += priceTag(club);
+
+  const gfSearchLink = `https://www.google.com/search?q=${encodeURIComponent(club.name + ' greenfee pris')}`;
+
+  let rows = '';
+  if (club.phone) rows += `<div class="popup-row"><span class="icon">📞</span>${club.phone}</div>`;
+  const clubWebUrl = getClubWebsite(club);
+  const displayUrl = clubWebUrl.replace(/^https?:\/\/(www\.)?/,'').split('/')[0];
+  rows += `<div class="popup-row"><span class="icon">🌐</span><a href="${clubWebUrl}" target="_blank" rel="noopener">${displayUrl}</a></div>`;
+  if (club.stars) rows += `<div class="popup-row"><span class="icon">⭐</span><span style="color:#f59e0b">${renderStars(club.stars)}</span> <span style="color:var(--text-tertiary)">${club.stars.toFixed(1)}</span></div>`;
+  if (club.greenfee) {
+    rows += `<div class="popup-row"><span class="icon">💰</span><strong style="color:var(--text)">${club.greenfee}</strong></div>`;
+  } else if (selectedDateTime) {
+    const price = estimatedPrice(club);
+    const tier = clubTier(club);
+    const colors = { budget: '#34d399', standard: '#fbbf24', premium: '#f87171' };
+    rows += `<div class="popup-row"><span class="icon">💰</span><strong style="color:${colors[tier]}">~${price} kr</strong> <span style="color:var(--text-tertiary);font-size:0.7rem">(uppskattning)</span></div>`;
+  } else {
+    rows += `<div class="popup-row"><span class="icon">💰</span><a href="${gfSearchLink}" target="_blank" rel="noopener" style="color:var(--text-secondary)">${t('search_greenfee')}</a></div>`;
+  }
+
+  // Country-specific booking links for popup
+  let popupBookLink;
+  if (club.country === 'SE') {
+    popupBookLink = `https://www.mingolf.se/Search?search=${encodeURIComponent(club.name)}`;
+  } else if (club.country === 'DK') {
+    popupBookLink = `https://www.golfbox.dk/portal/SearchCourse.aspx?search=${encodeURIComponent(club.name)}`;
+  } else if (club.country === 'ES') {
+    popupBookLink = `https://www.google.com/search?q=${encodeURIComponent(club.name + ' book tee time')}`;
+  } else {
+    popupBookLink = `https://www.google.com/search?q=${encodeURIComponent(club.name + ' book tee time')}`;
+  }
+
+  return `
+    <div class="popup-inner">
+      <div class="popup-name">${club.name}</div>
+      <div class="popup-tags">${tags}</div>
+      ${rows ? `<div class="popup-rows">${rows}</div>` : ''}
+    </div>
+    <div class="popup-actions">
+      <a class="popup-btn popup-btn-primary" href="${gmLink}" target="_blank" rel="noopener">
+        ${t('reviews')}
+      </a>
+      <a class="popup-btn popup-btn-yt" href="${ytLink}" target="_blank" rel="noopener">
+        ${t('youtube')}
+      </a>
+      <a class="popup-btn popup-btn-secondary" href="${getClubWebsite(club)}" target="_blank" rel="noopener">${t('web')}</a>
+      <a class="popup-btn popup-btn-book" href="${popupBookLink}" target="_blank" rel="noopener">${t('book')}</a>
+    </div>
+  `;
+}
+
+// ── Render ─────────────────────────────────────────────────────────────────
+function render() {
+  const q = document.getElementById('search').value.toLowerCase().trim();
+
+  const filtered = allClubs.filter(c => {
+    if (q && !c.name.toLowerCase().includes(q)) return false;
+    if (activeCountry !== 'all' && c.country !== activeCountry) return false;
+    if (showLunchOnly && !c.hasLunch) return false;
+    if (showRatedOnly && !c.stars) return false;
+    if (activeCourseType !== 'all' && c.courseType !== activeCourseType) return false;
+    return true;
+  });
+
+  clusterGroup.clearLayers();
+  const markerArray = [];
+  markers = filtered.map(club => {
+    const m = L.marker([club.lat, club.lon], { icon: pinIcon });
+    m.on('click', () => {
+      m.bindPopup(buildPopup(club), { maxWidth: 300 }).openPopup();
+      highlightCard(club.id);
+    });
+    markerArray.push(m);
+    return { club, marker: m };
+  });
+  clusterGroup.addLayers(markerArray);
+
+  renderSidebar(filtered);
+  document.getElementById('count').textContent = filtered.length;
+  document.getElementById('sidebar-count-line').innerHTML = t('showing') + ' <strong><span id="count">' + filtered.length + '</span></strong> ' + t('clubs');
+  document.getElementById('no-results').style.display = filtered.length === 0 ? 'block' : 'none';
+
+  // Update filter indicator and button label
+  const activeCount = (activeCountry !== 'all' ? 1 : 0) + (activeCourseType !== 'all' ? 1 : 0) + (showLunchOnly ? 1 : 0) + (showRatedOnly ? 1 : 0);
+  const hasActiveFilters = activeCount > 0;
+  const ftBtn = document.getElementById('filter-toggle');
+  ftBtn.classList.toggle('has-active', hasActiveFilters);
+  ftBtn.innerHTML = `${t('filter')}${activeCount > 0 ? ` <span style="background:var(--accent);color:#000;border-radius:10px;padding:1px 6px;font-size:0.7rem;font-weight:700;margin-left:2px">${activeCount}</span>` : ''}<span class="filter-dot"></span>`;
+  document.getElementById('clear-filters-btn').classList.toggle('visible', hasActiveFilters);
+}
+
+// ── Smart website URL generator for Swedish golf clubs ────────────────────
+function guessClubWebsite(name) {
+  // Strip common suffixes to get the base name
+  let base = name;
+  let suffix = 'gk';
+
+  if (/\s+GK$/i.test(base)) {
+    base = base.replace(/\s+GK$/i, '');
+    suffix = 'gk';
+  } else if (/\s+GC$/i.test(base)) {
+    base = base.replace(/\s+GC$/i, '');
+    suffix = 'gc';
+  } else if (/\s+G&CC$/i.test(base)) {
+    base = base.replace(/\s+G&CC$/i, '');
+    suffix = 'gcc';
+  } else if (/\s+Golf\s*&\s*Country\s*Club$/i.test(base)) {
+    base = base.replace(/\s+Golf\s*&\s*Country\s*Club$/i, '');
+    suffix = 'gcc';
+  } else if (/\s+Golfklubb$/i.test(base)) {
+    base = base.replace(/\s+Golfklubb$/i, '');
+    suffix = 'gk';
+  } else if (/\s+Golf$/i.test(base)) {
+    base = base.replace(/\s+Golf$/i, '');
+    suffix = 'golf';
+  } else if (/\s+Golfbana$/i.test(base)) {
+    base = base.replace(/\s+Golfbana$/i, '');
+    suffix = 'golf';
+  } else if (/\s+Golf\s*&\s*Kultur$/i.test(base)) {
+    base = base.replace(/\s+Golf\s*&\s*Kultur$/i, '');
+    suffix = 'golf';
+  }
+
+  // Transliterate Swedish characters and clean up
+  const slug = base.toLowerCase()
+    .replace(/å/g, 'a')
+    .replace(/ä/g, 'a')
+    .replace(/ö/g, 'o')
+    .replace(/é/g, 'e')
+    .replace(/ü/g, 'u')
+    .replace(/['']/g, '')
+    .replace(/[\s\-&]+/g, '')
+    .replace(/[^a-z0-9]/g, '');
+
+  return `https://www.${slug}${suffix}.se`;
+}
+
+function getClubWebsite(club) {
+  if (club.website) return club.website;
+  return guessClubWebsite(club.name);
+}
+
+const SIDEBAR_PAGE_SIZE = 50;
+let currentSidebarList = [];
+let sidebarRendered = 0;
+
+function renderSidebar(list) {
+  const el = document.getElementById('club-list');
+  el.innerHTML = '';
+  currentSidebarList = list;
+  sidebarRendered = 0;
+  appendSidebarCards(SIDEBAR_PAGE_SIZE);
+}
+
+function appendSidebarCards(count) {
+  const el = document.getElementById('club-list');
+  const end = Math.min(sidebarRendered + count, currentSidebarList.length);
+  const fragment = document.createDocumentFragment();
+
+  for (let i = sidebarRendered; i < end; i++) {
+    const club = currentSidebarList[i];
+    const div = document.createElement('div');
+    div.className = 'club-card';
+    div.dataset.id = club.id;
+
+    let tags = '';
+    if (club.holes) tags += `<span class="tag tag-holes">⬡ ${club.holes} hål</span>`;
+    if (club.hasLunch) tags += `<span class="tag tag-lunch">${t('lunch')}</span>`;
+    tags += courseTypeTag(club);
+    if (club.greenfee) tags += `<span class="tag tag-gf-budget">💰 ${club.greenfee}</span>`;
+    tags += priceTag(club);
+
+    const searchSuffix = club.country === 'ES' ? 'Spain' : club.country === 'DK' ? 'Denmark' : 'Sweden';
+    const ytLink = `https://www.youtube.com/results?search_query=${encodeURIComponent(club.name + ' golf course ' + searchSuffix)}`;
+    const gmLink = `https://www.google.com/maps/search/${encodeURIComponent(club.name + ' golf')}`;
+    const gfLink = `https://www.google.com/search?q=${encodeURIComponent(club.name + ' greenfee pris')}`;
+    const webLink = getClubWebsite(club);
+
+    // Country-specific booking links
+    let bookLink;
+    if (club.country === 'SE') {
+      bookLink = `https://www.mingolf.se/Search?search=${encodeURIComponent(club.name)}`;
+    } else if (club.country === 'DK') {
+      bookLink = `https://www.golfbox.dk/portal/SearchCourse.aspx?search=${encodeURIComponent(club.name)}`;
+    } else if (club.country === 'ES') {
+      bookLink = `https://www.google.com/search?q=${encodeURIComponent(club.name + ' book tee time')}`;
+    } else {
+      bookLink = `https://www.google.com/search?q=${encodeURIComponent(club.name + ' book tee time')}`;
+    }
+    const hasOsmWebsite = club.website && club.website.startsWith('http');
+    const isSaved = savedTrips.includes(club.id);
+
+    let meta = '';
+    if (club.stars) meta = `<div class="club-card-reviews"><span class="stars">${renderStars(club.stars)}</span> ${club.stars.toFixed(1)}</div>`;
+
+    div.innerHTML = `
+      <button class="card-save-btn ${isSaved ? 'saved' : ''}" data-save-id="${club.id}" title="${t('save_trip')}">${isSaved ? '❤️' : '🤍'}</button>
+      <div class="club-card-name">${club.name}</div>
+      ${tags ? `<div class="club-card-tags">${tags}</div>` : ''}
+      ${meta}
+      <div class="club-card-actions">
+        <a class="card-action-btn card-action-btn-web" href="${webLink}" target="_blank" rel="noopener">${t('web')}</a>
+        <a class="card-action-btn card-action-btn-yt" href="${ytLink}" target="_blank" rel="noopener">${t('video')}</a>
+        <a class="card-action-btn card-action-btn-gm" href="${gmLink}" target="_blank" rel="noopener">${t('map_link')}</a>
+        <a class="card-action-btn card-action-btn-gf" href="${gfLink}" target="_blank" rel="noopener">${t('greenfee')}</a>
+        <a class="card-action-btn card-action-btn-book" href="${bookLink}" target="_blank" rel="noopener">${t('book')}</a>
+        ${hasOsmWebsite ? `<a class="card-action-btn card-action-btn-web-alt" href="${club.website}" target="_blank" rel="noopener">${t('club_site')}</a>` : ''}
+      </div>
+    `;
+
+    div.querySelectorAll('a').forEach(a => a.addEventListener('click', e => e.stopPropagation()));
+
+    // Save to trip button
+    const saveBtn = div.querySelector('.card-save-btn');
+    saveBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleSaveTrip(club.id);
+      const nowSaved = savedTrips.includes(club.id);
+      saveBtn.classList.toggle('saved', nowSaved);
+      saveBtn.textContent = nowSaved ? '❤️' : '🤍';
+    });
+
+    div.addEventListener('click', () => {
+      map.setView([club.lat, club.lon], 14);
+      const entry = markers.find(m => m.club.id === club.id);
+      if (entry) clusterGroup.zoomToShowLayer(entry.marker, () => entry.marker.openPopup());
+      highlightCard(club.id);
+    });
+
+    fragment.appendChild(div);
+  }
+
+  el.appendChild(fragment);
+  sidebarRendered = end;
+}
+
+// Infinite scroll — load more cards when user scrolls near bottom
+document.getElementById('club-list').addEventListener('scroll', function() {
+  if (sidebarRendered >= currentSidebarList.length) return;
+  if (this.scrollTop + this.clientHeight >= this.scrollHeight - 200) {
+    appendSidebarCards(SIDEBAR_PAGE_SIZE);
+  }
+});
+
+function highlightCard(id) {
+  if (activeCard) activeCard.classList.remove('active');
+  const el = document.querySelector(`.club-card[data-id="${id}"]`);
+  if (el) { el.classList.add('active'); el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); activeCard = el; }
+}
+
+// ── Controls ───────────────────────────────────────────────────────────────
+let searchDebounce = null;
+document.getElementById('search').addEventListener('input', function() {
+  clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(render, 180);
+});
+
+document.getElementById('type-filters').addEventListener('click', e => {
+  const btn = e.target.closest('.pill');
+  if (!btn) return;
+  document.querySelectorAll('#type-filters .pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeCourseType = btn.dataset.type;
+  render();
+});
+
+document.getElementById('lunch-toggle').addEventListener('click', function() {
+  showLunchOnly = !showLunchOnly;
+  this.classList.toggle('active', showLunchOnly);
+  render();
+});
+
+document.getElementById('rated-toggle').addEventListener('click', function() {
+  showRatedOnly = !showRatedOnly;
+  this.classList.toggle('active', showRatedOnly);
+  render();
+});
+
+// Country filter
+document.getElementById('country-filters').addEventListener('click', e => {
+  const btn = e.target.closest('.pill');
+  if (!btn) return;
+  document.querySelectorAll('#country-filters .pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeCountry = btn.dataset.country;
+  render();
+});
+
+// Save to trip helpers
+function toggleSaveTrip(clubId) {
+  const idx = savedTrips.indexOf(clubId);
+  if (idx > -1) savedTrips.splice(idx, 1);
+  else savedTrips.push(clubId);
+  localStorage.setItem('golf_saved_trips', JSON.stringify(savedTrips));
+  syncTripsToSupabase();
+}
+
+function isSavedTrip(clubId) {
+  return savedTrips.includes(clubId);
+}
+
+// ── Filter bar toggle ──────────────────────────────────────────────────────
+document.getElementById('filter-toggle').addEventListener('click', function() {
+  filterBarOpen = !filterBarOpen;
+  this.classList.toggle('active', filterBarOpen);
+  document.getElementById('filter-bar').classList.toggle('open', filterBarOpen);
+});
+// Mark active on load since filterBarOpen = true
+document.getElementById('filter-toggle').classList.add('active');
+
+// ── Clear all filters ──────────────────────────────────────────────────────
+document.getElementById('clear-filters-btn').addEventListener('click', function() {
+  activeHoles = 'all';
+  activeCourseType = 'all';
+  activeCountry = 'all';
+  showLunchOnly = false;
+  showRatedOnly = false;
+  document.querySelectorAll('#type-filters .pill').forEach(b => b.classList.toggle('active', b.dataset.type === 'all'));
+  document.querySelectorAll('#country-filters .pill').forEach(b => b.classList.toggle('active', b.dataset.country === 'all'));
+  document.getElementById('lunch-toggle').classList.remove('active');
+  document.getElementById('rated-toggle').classList.remove('active');
+  render();
+});
+
+// ── Sidebar resize & collapse ─────────────────────────────────────────────
+(function() {
+  const sidebar = document.getElementById('sidebar');
+  const handle = document.getElementById('sidebar-resize');
+  const toggle = document.getElementById('sidebar-toggle');
+  let isDragging = false;
+  let lastWidth = 340;
+
+  // Widen default sidebar
+  sidebar.style.width = lastWidth + 'px';
+
+  handle.addEventListener('mousedown', function(e) {
+    e.preventDefault();
+    isDragging = true;
+    handle.classList.add('dragging');
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  });
+
+  document.addEventListener('mousemove', function(e) {
+    if (!isDragging) return;
+    const mainRect = document.querySelector('.main').getBoundingClientRect();
+    let newWidth = e.clientX - mainRect.left;
+    newWidth = Math.max(200, Math.min(newWidth, window.innerWidth * 0.6));
+    sidebar.style.width = newWidth + 'px';
+    sidebar.style.transition = 'none';
+    lastWidth = newWidth;
+    map.invalidateSize();
+  });
+
+  document.addEventListener('mouseup', function() {
+    if (!isDragging) return;
+    isDragging = false;
+    handle.classList.remove('dragging');
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+    sidebar.style.transition = '';
+    map.invalidateSize();
+  });
+
+  toggle.addEventListener('click', function() {
+    const isCollapsed = sidebar.classList.toggle('collapsed');
+    toggle.textContent = isCollapsed ? '▶' : '◀';
+    toggle.title = isCollapsed ? t('show_sidebar') : t('hide_sidebar');
+    setTimeout(() => map.invalidateSize(), 280);
+  });
+})();
+
+document.getElementById('locate-btn').addEventListener('click', () => {
+  if (!navigator.geolocation) return alert(t('geo_unsupported'));
+  navigator.geolocation.getCurrentPosition(pos => {
+    const { latitude: lat, longitude: lon } = pos.coords;
+    L.circle([lat, lon], {
+      radius: 30000, color: '#34d399', fillColor: '#34d399',
+      fillOpacity: 0.05, weight: 1.5, dashArray: '5,5'
+    }).addTo(map);
+    L.circleMarker([lat, lon], {
+      radius: 7, color: '#fff', fillColor: '#34d399', fillOpacity: 1, weight: 2
+    }).addTo(map).bindPopup(`<b>${t('your_pos')}</b>`).openPopup();
+    map.setView([lat, lon], 9);
+  }, () => alert(t('geo_error')));
+});
+
+// ── Greenfee pricing engine ────────────────────────────────────────────────
+let selectedDateTime = null; // { date: Date, tier: 'budget'|'standard'|'premium', label, prices }
+
+function calcGreenfee(date, timeStr) {
+  const [h, m] = timeStr.split(':').map(Number);
+  const minutes = h * 60 + m;
+  const dow = date.getDay(); // 0=Sun, 6=Sat
+  const month = date.getMonth(); // 0-indexed
+
+  // Season factor
+  let seasonLabel, seasonFactor;
+  if (month >= 5 && month <= 7) { seasonLabel = t('season_high'); seasonFactor = 1.15; }
+  else if (month >= 3 && month <= 9) { seasonLabel = t('season_mid'); seasonFactor = 1.0; }
+  else { seasonLabel = t('season_low'); seasonFactor = 0.75; }
+
+  // Day type
+  let dayLabel, dayFactor;
+  if (dow === 0 || dow === 6) { dayLabel = t('weekend'); dayFactor = 1.3; }
+  else if (dow === 5) { dayLabel = t('friday'); dayFactor = 1.1; }
+  else { dayLabel = t('weekday'); dayFactor = 1.0; }
+
+  // Time of day
+  let timeLabel, timeFactor;
+  if (minutes < 7 * 60) { timeLabel = t('early_morning'); timeFactor = 0.8; }
+  else if (minutes >= 15 * 60) { timeLabel = t('twilight'); timeFactor = 0.65; }
+  else if (minutes < 12 * 60) { timeLabel = t('forenoon'); timeFactor = 1.0; }
+  else { timeLabel = t('afternoon'); timeFactor = 0.9; }
+
+  const total = dayFactor * timeFactor * seasonFactor;
+
+  // Base price bands (SEK) for budget / standard / premium clubs
+  const bases = { budget: 250, standard: 450, premium: 650 };
+  const prices = {};
+  for (const [tier, base] of Object.entries(bases)) {
+    const raw = Math.round(base * total / 50) * 50;
+    prices[tier] = raw;
+  }
+
+  return {
+    label: `${dayLabel} · ${timeLabel} · ${seasonLabel}`,
+    factor: total,
+    prices
+  };
+}
+
+function clubTier(club) {
+  const score = (club.website ? 4 : 0) + (club.phone ? 3 : 0) + (club.holes ? 3 : 0) + (club.stars ? 5 : 0) + (club.hasLunch ? 3 : 0);
+  if (score >= 12) return 'premium';
+  if (score >= 6) return 'standard';
+  return 'budget';
+}
+
+function estimatedPrice(club) {
+  if (!selectedDateTime) return null;
+  const tier = clubTier(club);
+  return selectedDateTime.prices[tier];
+}
+
+function priceTag(club) {
+  if (!selectedDateTime) return '';
+  const price = estimatedPrice(club);
+  const tier = clubTier(club);
+  return `<span class="tag tag-gf-${tier}">💰 ~${price} kr</span>`;
+}
+
+// Time picker UI
+const timePop = document.getElementById('time-popover');
+const timeBtn = document.getElementById('time-btn');
+
+function positionPopover() {
+  const btnRect = timeBtn.getBoundingClientRect();
+  timePop.style.left = btnRect.left + btnRect.width / 2 + 'px';
+  timePop.style.top = (btnRect.bottom + 8) + 'px';
+  timePop.style.transform = 'translateX(-50%)';
+}
+
+timeBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const isOpen = timePop.classList.contains('open');
+  timePop.classList.toggle('open', !isOpen);
+  if (!isOpen) {
+    positionPopover();
+    // Set today as default date if empty
+    const dateInput = document.getElementById('tp-date');
+    if (!dateInput.value) {
+      dateInput.value = new Date().toISOString().split('T')[0];
+      updatePricingResult();
+    }
+  }
+});
+
+document.addEventListener('click', e => {
+  if (!timePop.contains(e.target) && e.target !== timeBtn) {
+    timePop.classList.remove('open');
+  }
+});
+
+function updatePricingResult() {
+  const dateVal = document.getElementById('tp-date').value;
+  const timeVal = document.getElementById('tp-time').value;
+  const resultEl = document.getElementById('tp-result');
+
+  if (!dateVal || !timeVal) { resultEl.classList.remove('show'); return; }
+
+  const date = new Date(dateVal);
+  const result = calcGreenfee(date, timeVal);
+  selectedDateTime = { date, prices: result.prices };
+
+  resultEl.classList.add('show');
+  resultEl.innerHTML = `
+    <div class="tp-tier">${result.label}</div>
+    <div class="tp-prices">
+      <span class="tp-price tp-price-budget">${t('budget_course')}: ~${result.prices.budget} kr</span>
+      <span class="tp-price tp-price-standard">${t('standard_club')}: ~${result.prices.standard} kr</span>
+      <span class="tp-price tp-price-premium">${t('premium_club')}: ~${result.prices.premium} kr</span>
+    </div>
+    <div class="tp-note">${t('price_disclaimer')}</div>
+  `;
+
+  // Update button label
+  const d = date.toLocaleDateString('sv-SE', { weekday: 'short', month: 'short', day: 'numeric' });
+  timeBtn.textContent = `🕐 ${d} ${timeVal}`;
+  timeBtn.className = 'time-btn-active';
+
+  render();
+}
+
+function clearDateTime() {
+  selectedDateTime = null;
+  document.getElementById('tp-date').value = '';
+  document.getElementById('tp-result').classList.remove('show');
+  timeBtn.textContent = t('pick_time');
+  timeBtn.className = 'time-btn-inactive';
+  timePop.classList.remove('open');
+  render();
+}
+
+document.getElementById('tp-date').addEventListener('change', updatePricingResult);
+document.getElementById('tp-time').addEventListener('change', updatePricingResult);
+document.getElementById('tp-clear').addEventListener('click', clearDateTime);
+
+// ── Rankings ───────────────────────────────────────────────────────────────
+function getCategories() {
+  return [
+    {
+      id: 'populara',
+      label: t('rank_popular'),
+      note: 'Rankad efter etableringsgrad: webbplats, telefon, antal hål, lunch och betyg ger poäng. Högt poäng = välkänd, välskött klubb.',
+      sort: c => (c.website ? 4 : 0) + (c.phone ? 3 : 0) + (c.holes ? 3 : 0) + (c.stars ? 5 : 0) + (c.hasLunch ? 3 : 0),
+      score: c => {
+        const s = (c.website ? 4 : 0) + (c.phone ? 3 : 0) + (c.holes ? 3 : 0) + (c.stars ? 5 : 0) + (c.hasLunch ? 3 : 0);
+        return `${s} p`;
+      },
+      scoreLabel: 'Poäng',
+      filter: () => true
+    },
+    {
+      id: 'bana',
+      label: t('rank_course'),
+      note: 'Sorterad efter antal hål. Klubbar med 27+ hål hamnar högst — klicka ▶ YouTube för att se banorna i action.',
+      sort: c => (parseInt(c.holes) || 0) * 10 + (c.website ? 3 : 0) + (c.phone ? 2 : 0),
+      score: c => c.holes ? `${c.holes} hål` : '–',
+      scoreLabel: 'Hål',
+      filter: c => !!c.holes
+    },
+    {
+      id: 'lunch',
+      label: t('rank_lunch'),
+      note: 'Klubbar med restaurang registrerad i OpenStreetMap. Klicka "⭐ Recensioner" för aktuella Google-omdömen om maten.',
+      sort: c => (c.hasLunch ? 100 : 0) + (c.website ? 5 : 0) + (c.phone ? 3 : 0),
+      score: c => c.hasLunch ? '🍽 Ja' : '–',
+      scoreLabel: 'Lunch',
+      filter: c => c.hasLunch
+    },
+    {
+      id: 'recensioner',
+      label: t('rank_reviews'),
+      note: 'Sorterad efter betyg i OpenStreetMap (begränsad data). Klicka "⭐ Recensioner" på valfri klubb för aktuella Google-omdömen och betyg.',
+      sort: c => (c.stars || 0) * 10 + (c.website ? 2 : 0) + (c.hasLunch ? 1 : 0),
+      score: c => c.stars ? `${c.stars.toFixed(1)} ★` : 'Se Google',
+      scoreLabel: 'Betyg',
+      filter: () => true
+    },
+    {
+      id: 'greenfee',
+      label: t('rank_greenfee'),
+      note: 'Greenfee finns inte i OSM. Listan visar alla klubbar med hemsida — klicka "🌐 Webb" för priser, eller "⭐ Recensioner" för Google-omdömen som ofta nämner greenfee.',
+      sort: c => (c.greenfee ? 100 : 0) + (c.website ? 10 : 0) + (parseInt(c.holes) || 0) + (c.hasLunch ? 2 : 0),
+      score: c => c.greenfee ? `💰 ${c.greenfee}` : (c.website ? '🌐 Se webb' : '–'),
+      scoreLabel: 'Greenfee',
+      filter: () => true
+    },
+    {
+      id: 'etablerade',
+      label: t('rank_established'),
+      note: 'Klubbar med fullständig information: hemsida, telefon, antal hål, lunch och betyg. Ju fler fält ifyllda desto mer etablerad.',
+      sort: c => [c.website, c.phone, c.holes, c.stars, c.hasLunch].filter(Boolean).length * 10 + (parseInt(c.holes) || 0),
+      score: c => {
+        const f = [c.website, c.phone, c.holes, c.stars, c.hasLunch].filter(Boolean).length;
+        const labels = ['🌐','📞','⛳','★','🍽'];
+        const vals = [c.website, c.phone, c.holes, c.stars, c.hasLunch];
+        return vals.map((v,i) => v ? `<span style="color:var(--accent)">${labels[i]}</span>` : `<span style="opacity:0.25">${labels[i]}</span>`).join(' ');
+      },
+      scoreLabel: 'Fält',
+      filter: () => true
+    }
+  ];
+}
+
+let activeRankTab = 'populara';
+
+function openRankings() {
+  document.getElementById('rankings-overlay').classList.add('open');
+  renderRankingsTabs();
+  renderRankingsBody();
+}
+
+function closeRankings() {
+  document.getElementById('rankings-overlay').classList.remove('open');
+}
+
+function renderRankingsTabs() {
+  const el = document.getElementById('rankings-tabs');
+  el.innerHTML = getCategories().map(cat => `
+    <button class="rtab ${cat.id === activeRankTab ? 'active' : ''}" data-cat="${cat.id}">
+      ${cat.label}
+    </button>
+  `).join('');
+  el.querySelectorAll('.rtab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeRankTab = btn.dataset.cat;
+      renderRankingsTabs();
+      renderRankingsBody();
+    });
+  });
+}
+
+function renderRankingsBody() {
+  const cat = getCategories().find(c => c.id === activeRankTab);
+  const body = document.getElementById('rankings-body');
+
+  const ranked = [...allClubs]
+    .filter(cat.filter)
+    .sort((a, b) => cat.sort(b) - cat.sort(a))
+    .slice(0, 15);
+
+  if (!ranked.length) {
+    body.innerHTML = `<div style="padding:32px;text-align:center;color:var(--text-tertiary);font-size:0.82rem;">${t('no_data')}</div>`;
+    return;
+  }
+
+  const medalNum = (i) => {
+    if (i === 0) return '<span class="rank-num gold">🥇</span>';
+    if (i === 1) return '<span class="rank-num silver">🥈</span>';
+    if (i === 2) return '<span class="rank-num bronze">🥉</span>';
+    return `<span class="rank-num">${i + 1}</span>`;
+  };
+
+  body.innerHTML = `
+    <div class="rank-category-note">${cat.note}</div>
+    ${ranked.map((club, i) => {
+      const ytLink = `https://www.youtube.com/results?search_query=${encodeURIComponent(club.name + ' golf course Sweden')}`;
+      const gmLink = `https://www.google.com/maps/search/${encodeURIComponent(club.name + ' golfklubb Sverige')}`;
+      let tags = '';
+      if (club.holes) tags += `<span class="tag tag-holes">⬡ ${club.holes} hål</span>`;
+      if (club.hasLunch) tags += `<span class="tag tag-lunch">🍽 Lunch</span>`;
+      if (club.stars) tags += `<span class="tag" style="background:rgba(251,191,36,0.12);color:#fbbf24">★ ${club.stars.toFixed(1)}</span>`;
+      return `
+        <div class="rank-item" data-id="${club.id}">
+          ${medalNum(i)}
+          <div class="rank-info">
+            <div class="rank-name">${club.name}</div>
+            <div class="rank-tags">${tags}</div>
+          </div>
+          <div class="rank-score">
+            <div class="rank-score-val">${cat.score(club)}</div>
+            <div class="rank-score-label">${cat.scoreLabel}</div>
+          </div>
+          <div class="rank-actions">
+            <a class="rank-btn rank-btn-yt" href="${ytLink}" target="_blank" rel="noopener">▶</a>
+            <a class="rank-btn rank-btn-gm" href="${gmLink}" target="_blank" rel="noopener">⭐</a>
+            <button class="rank-btn rank-btn-map" data-id="${club.id}">📍</button>
+          </div>
+        </div>
+      `;
+    }).join('')}
+  `;
+
+  // Fly to map on 📍 or row click
+  body.querySelectorAll('.rank-btn-map').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const club = allClubs.find(c => c.id == btn.dataset.id);
+      if (!club) return;
+      closeRankings();
+      map.setView([club.lat, club.lon], 14);
+      const entry = markers.find(m => m.club.id === club.id);
+      if (entry) clusterGroup.zoomToShowLayer(entry.marker, () => entry.marker.openPopup());
+    });
+  });
+
+  body.querySelectorAll('.rank-item').forEach(row => {
+    row.addEventListener('click', e => {
+      if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON') return;
+      const club = allClubs.find(c => c.id == row.dataset.id);
+      if (!club) return;
+      closeRankings();
+      map.setView([club.lat, club.lon], 14);
+      const entry = markers.find(m => m.club.id === club.id);
+      if (entry) clusterGroup.zoomToShowLayer(entry.marker, () => entry.marker.openPopup());
+    });
+  });
+}
+
+document.getElementById('rankings-btn').addEventListener('click', openRankings);
+document.getElementById('rankings-close').addEventListener('click', closeRankings);
+document.getElementById('rankings-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('rankings-overlay')) closeRankings();
+});
+
+// ── Status ─────────────────────────────────────────────────────────────────
+function setStatus(t, c) {
+  const el = document.getElementById('status');
+  el.textContent = t; el.className = c;
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+(async () => {
+  try {
+    setStatus(t('loading'), 'loading');
+    allClubs = await loadClubs();
+    setStatus(`${allClubs.length} ${t('clubs')}`, 'done');
+    render();
+    // Apply saved language after everything is loaded
+    if (window._pendingLangApply) {
+      delete window._pendingLangApply;
+      applyLanguage(currentLang);
+    }
+  } catch(e) {
+    console.error(e);
+    setStatus(t('loading_error'), 'error');
+  }
+})();
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── MOBILE VIEW TOGGLE ────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+
+let mobileView = 'list'; // 'list' or 'map'
+
+document.getElementById('mobile-view-toggle').addEventListener('click', function(e) {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  const view = btn.dataset.view;
+  if (view === mobileView) return;
+  mobileView = view;
+
+  this.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const sidebar = document.getElementById('sidebar');
+  const mapEl = document.getElementById('map');
+  if (view === 'map') {
+    sidebar.classList.add('mobile-hidden');
+    mapEl.classList.add('mobile-visible');
+    setTimeout(() => map.invalidateSize(), 50);
+  } else {
+    sidebar.classList.remove('mobile-hidden');
+    mapEl.classList.remove('mobile-visible');
+  }
+});
+
+// Start filter bar collapsed on mobile
+if (window.innerWidth <= 768) {
+  filterBarOpen = false;
+  document.getElementById('filter-bar').classList.remove('open');
+  document.getElementById('filter-toggle').classList.remove('active');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── TAB NAVIGATION ────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+
+let activeTab = 'courses';
+
+function switchTab(target) {
+  if (target === activeTab) return;
+  activeTab = target;
+
+  // Update header nav tabs
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === target));
+  // Update mobile bottom tabs
+  document.querySelectorAll('.bottom-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === target));
+
+  // Remove all tab body classes
+  document.body.classList.remove('tab-courses', 'tab-live', 'tab-news', 'tab-shop', 'tab-trips');
+  document.body.classList.add('tab-' + target);
+
+  // Hide all views
+  const coursesView = document.querySelector('.main');
+  const liveView = document.getElementById('masters-view');
+  const newsView = document.getElementById('view-news');
+  const shopView = document.getElementById('view-shop');
+  const tripsView = document.getElementById('view-trips');
+
+  coursesView.style.display = 'none';
+  liveView.classList.remove('active');
+  newsView.classList.remove('active');
+  shopView.classList.remove('active');
+  tripsView.classList.remove('active');
+
+  // Show target view
+  if (target === 'courses') {
+    coursesView.style.display = 'flex';
+    document.getElementById('search').placeholder = t('search_clubs');
+    setTimeout(() => map.invalidateSize(), 50);
+  } else if (target === 'live') {
+    liveView.classList.add('active');
+    document.getElementById('search').placeholder = t('search_players');
+    if (!chatInitialized) initChat();
+    if (!mastersDataLoaded) fetchLeaderboard();
+  } else if (target === 'news') {
+    newsView.classList.add('active');
+    if (!newsLoaded) loadNews();
+  } else if (target === 'shop') {
+    shopView.classList.add('active');
+    if (!shopInitialized) initShop();
+  } else if (target === 'trips') {
+    tripsView.classList.add('active');
+    renderTrips();
+  }
+}
+
+// Header nav tabs
+document.querySelectorAll('.nav-tab').forEach(tab => {
+  tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+});
+
+// Mobile bottom nav tabs
+document.querySelectorAll('.bottom-tab').forEach(tab => {
+  tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── MASTERS LEADERBOARD ───────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+
+let mastersDataLoaded = false;
+let mastersPlayers = [];
+let mastersRefreshTimer = null;
+let allTournaments = [];
+let currentEventIndex = 0;
+
+async function fetchLeaderboard() {
+  try {
+    const resp = await fetch('https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard');
+    if (!resp.ok) throw new Error('ESPN API error');
+    const data = await resp.json();
+
+    const events = data.events || [];
+    if (!events.length) {
+      document.getElementById('lb-loading').innerHTML = `<div>${t('no_tournament')}</div>`;
+      return;
+    }
+
+    allTournaments = events;
+
+    // Build tournament selector
+    const selector = document.getElementById('tournament-selector');
+    if (selector) {
+      selector.innerHTML = events.map((ev, i) => `<option value="${i}">${ev.shortName || ev.name || 'Tournament'}</option>`).join('');
+      selector.value = currentEventIndex;
+      selector.style.display = events.length > 1 ? 'inline-block' : 'none';
+    }
+
+    loadTournamentData(events[currentEventIndex]);
+  } catch(err) {
+    console.error('Leaderboard fetch error:', err);
+    document.getElementById('lb-loading').innerHTML =
+      `<div>${t('lb_error')}</div>`;
+    setTimeout(fetchLeaderboard, 10000);
+  }
+}
+
+function loadTournamentData(event) {
+  if (!event) return;
+
+  // Update header with dynamic tournament info
+  const lbTitle = document.querySelector('.lb-title');
+  const eventName = event.shortName || event.name || 'PGA Tournament';
+  const courseName = event.competitions?.[0]?.venue?.fullName || '';
+  const isLive = event.status?.type?.state === 'in' || event.competitions?.[0]?.status?.type?.state === 'in';
+
+  lbTitle.innerHTML = `⛳ ${eventName} ${courseName ? `<span class="masters-badge">${courseName}</span>` : ''}`;
+
+  // Update live dot visibility
+  const liveDots = document.querySelectorAll('.live-dot');
+  liveDots.forEach(dot => dot.style.display = isLive ? 'inline-block' : 'none');
+
+  // Update chat room to match tournament
+  const eventSlug = eventName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  if (chatInitialized) {
+    const chatBody = document.getElementById('chat-body');
+    chatBody.innerHTML = `<iframe
+      src="https://tlk.io/golfrabbit-${eventSlug}"
+      style="flex:1;width:100%;border:none;background:#0a0a0a;border-radius:0;"
+      loading="lazy"
+    ></iframe>
+    <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:0.7rem;color:var(--text-tertiary);text-align:center;">
+      ${t('chat_footer')}
+    </div>`;
+  }
+
+  // Parse competitors
+  const competition = event.competitions?.[0];
+  if (!competition) return;
+
+  const competitors = competition.competitors || [];
+  const roundNum = competition.status?.period || 1;
+  const statusText = competition.status?.type?.shortDetail || '';
+
+  document.getElementById('lb-round-info').textContent =
+    `${t('round')} ${roundNum} — ${statusText || t('ongoing')}`;
+
+  mastersPlayers = competitors.map(c => {
+    const athlete = c.athlete || {};
+    const linescores = c.linescores || [];
+    const rounds = linescores.map(ls => ls.displayValue || ls.value || '–');
+
+    const currentRound = linescores[linescores.length - 1];
+    let today = '–';
+    let thru = '–';
+
+    if (c.status) {
+      thru = c.status.displayValue || c.status.thru || '–';
+      if (thru === 'F' || thru === '18') thru = 'F';
+    }
+    if (currentRound) {
+      today = currentRound.displayValue || '–';
+    }
+
+    return {
+      pos: c.order || c.sortOrder || 99,
+      posDisplay: c.status?.position?.displayName || String(c.order || '–'),
+      name: athlete.displayName || athlete.fullName || 'Unknown',
+      shortName: athlete.shortName || '',
+      country: athlete.flag?.alt || '',
+      countryFlag: athlete.flag?.href || '',
+      score: c.score || 'E',
+      today,
+      thru,
+      rounds,
+      isCut: c.status?.type?.name === 'cut',
+    };
+  });
+
+  mastersPlayers.sort((a, b) => a.pos - b.pos);
+  mastersDataLoaded = true;
+  renderLeaderboard();
+
+  // Auto-refresh every 60 seconds
+  if (mastersRefreshTimer) clearInterval(mastersRefreshTimer);
+  mastersRefreshTimer = setInterval(fetchLeaderboard, 60000);
+
+  const now = new Date();
+  document.getElementById('lb-refresh-text').textContent =
+    `${t('updated')} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+}
+
+function renderLeaderboard(filter) {
+  const tbody = document.getElementById('lb-body');
+  const table = document.getElementById('lb-table');
+  const loading = document.getElementById('lb-loading');
+
+  let players = mastersPlayers;
+  if (filter) {
+    const q = filter.toLowerCase();
+    players = players.filter(p => p.name.toLowerCase().includes(q) || p.shortName.toLowerCase().includes(q));
+  }
+
+  loading.style.display = 'none';
+  table.style.display = 'table';
+
+  tbody.innerHTML = players.map((p, i) => {
+    const scoreClass = getScoreClass(p.score);
+    const todayClass = getScoreClass(p.today);
+
+    let posHtml = `<span class="lb-pos">${p.posDisplay}</span>`;
+    if (p.pos === 1) posHtml = `<span class="lb-pos lb-pos-1"><span class="lb-medal">🥇</span>${p.posDisplay}</span>`;
+    else if (p.pos === 2) posHtml = `<span class="lb-pos lb-pos-2"><span class="lb-medal">🥈</span>${p.posDisplay}</span>`;
+    else if (p.pos === 3) posHtml = `<span class="lb-pos lb-pos-3"><span class="lb-medal">🥉</span>${p.posDisplay}</span>`;
+
+    const rounds = [0,1,2,3].map(r =>
+      `<td class="lb-round">${p.rounds[r] || '–'}</td>`
+    ).join('');
+
+    return `<tr${p.isCut ? ' style="opacity:0.4"' : ''}>
+      <td>${posHtml}</td>
+      <td><span class="lb-player">${p.name}</span>${p.country ? `<span class="lb-country">${p.country}</span>` : ''}</td>
+      <td class="lb-score ${scoreClass}">${p.score}</td>
+      <td class="lb-today ${todayClass}">${p.today}</td>
+      <td class="lb-thru">${p.thru}</td>
+      ${rounds}
+    </tr>`;
+  }).join('');
+}
+
+function getScoreClass(score) {
+  if (!score || score === '–' || score === '-') return 'even-par';
+  const s = String(score);
+  if (s === 'E' || s === '0') return 'even-par';
+  if (s.startsWith('-') || s.startsWith('−')) return 'under-par';
+  if (s.startsWith('+') || (parseInt(s) > 0 && !isNaN(parseInt(s)))) return 'over-par';
+  return 'even-par';
+}
+
+// Leaderboard player search
+document.getElementById('lb-search').addEventListener('input', function() {
+  renderLeaderboard(this.value);
+});
+
+// Also allow main search to work on Masters tab
+const origSearchHandler = document.getElementById('search').oninput;
+document.getElementById('search').addEventListener('input', function() {
+  if (activeTab === 'live') {
+    renderLeaderboard(this.value);
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── CHAT WIDGET ───────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+
+let chatInitialized = false;
+
+function initChat() {
+  chatInitialized = true;
+  const chatBody = document.getElementById('chat-body');
+  chatBody.innerHTML = `<iframe
+    src="https://tlk.io/golfrabbit-pga-tour"
+    style="flex:1;width:100%;border:none;background:#0a0a0a;border-radius:0;"
+    loading="lazy"
+  ></iframe>
+  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:0.7rem;color:var(--text-tertiary);text-align:center;">
+    ${t('chat_footer')}
+  </div>`;
+}
+
+// Tournament selector change handler
+document.getElementById('tournament-selector').addEventListener('change', function() {
+  currentEventIndex = parseInt(this.value) || 0;
+  if (allTournaments[currentEventIndex]) {
+    loadTournamentData(allTournaments[currentEventIndex]);
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── NEWS FEED ─────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+
+let newsLoaded = false;
+let newsCache = null;
+let newsCacheTime = 0;
+const NEWS_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+
+async function loadNews() {
+  const grid = document.getElementById('news-grid');
+  const loading = document.getElementById('news-loading');
+
+  // Check cache
+  if (newsCache && (Date.now() - newsCacheTime < NEWS_CACHE_TTL)) {
+    renderNews(newsCache);
+    newsLoaded = true;
+    return;
+  }
+
+  loading.style.display = 'block';
+
+  try {
+    const resp = await fetch('https://site.api.espn.com/apis/site/v2/sports/golf/pga/news');
+    if (!resp.ok) throw new Error('News fetch error');
+    const data = await resp.json();
+    newsCache = data.articles || [];
+    newsCacheTime = Date.now();
+    newsLoaded = true;
+    renderNews(newsCache);
+  } catch(err) {
+    console.error('News error:', err);
+    grid.innerHTML = `<div class="news-loading" style="grid-column:1/-1">${t('loading_error')}</div>`;
+  }
+}
+
+function renderNews(articles) {
+  const grid = document.getElementById('news-grid');
+  if (!articles.length) {
+    grid.innerHTML = `<div class="news-loading" style="grid-column:1/-1">No news available</div>`;
+    return;
+  }
+
+  grid.innerHTML = articles.map((a, i) => {
+    const img = a.images?.[0]?.url || '';
+    const date = a.published ? new Date(a.published).toLocaleDateString() : '';
+    const link = a.links?.web?.href || a.links?.api?.news?.href || '#';
+    const desc = a.description || '';
+    return `
+      <div class="news-card" onclick="window.open('${link}','_blank')">
+        ${img ? `<img class="news-card-img" src="${img}" alt="" loading="lazy" onerror="this.style.display='none'">` : `<div class="news-card-img" style="display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--text-tertiary)">📰</div>`}
+        <div class="news-card-body">
+          <div class="news-card-title">${a.headline || ''}</div>
+          ${desc ? `<div class="news-card-desc">${desc}</div>` : ''}
+          <div class="news-card-meta">
+            <span class="news-card-source">ESPN</span>
+            <span>${date}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── SHOP SHOWCASE ─────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+
+let shopInitialized = false;
+let shopCategory = 'all';
+
+const shopProducts = [
+  // Clubs
+  { id: 1, name: 'Stealth 2 Driver', brand: 'TaylorMade', price: '5 499 kr', category: 'clubs', color: '#1a1a2e', url: 'https://www.dormy.com/search?q=taylormade+stealth+driver', desc: 'Explosive distance with carbon twist face technology', featured: true },
+  { id: 3, name: 'Paradym X Iron Set', brand: 'Callaway', price: '12 990 kr', category: 'clubs', color: '#1e3a1e', url: 'https://www.amazon.se/s?k=callaway+paradym+iron+set', desc: 'Forgiving iron set with AI-designed flash face' },
+  { id: 5, name: 'Spider GT Putter', brand: 'TaylorMade', price: '3 499 kr', category: 'clubs', color: '#1a1a2e', url: 'https://www.dormy.com/search?q=taylormade+spider+putter', desc: 'Tour-proven stability with Pure Roll insert' },
+  { id: 11, name: 'G430 Max Driver', brand: 'Ping', price: '5 999 kr', category: 'clubs', color: '#1e2e3e', url: 'https://www.dormy.com/search?q=ping+g430+max+driver', desc: 'Maximum forgiveness with carbonfly wrap technology', featured: true },
+  { id: 13, name: 'SM10 Wedge', brand: 'Titleist', price: '2 199 kr', category: 'clubs', color: '#2d2d3d', url: 'https://www.golfwarehouse.co.uk/search?q=titleist+vokey+sm10+wedge', desc: 'Precision spin and control around the greens' },
+  { id: 17, name: 'Rogue ST Hybrid', brand: 'Callaway', price: '2 999 kr', category: 'clubs', color: '#1e3a1e', url: 'https://www.dormy.com/search?q=callaway+rogue+hybrid', desc: 'Versatile hybrid with jailbreak speed frame' },
+  { id: 23, name: 'ProStaff SGi Iron Set', brand: 'Wilson', price: '5 499 kr', category: 'clubs', color: '#3a2a2a', url: 'https://www.amazon.se/s?k=wilson+prostaff+sgi+iron', desc: 'Perfect starter set for improving players' },
+  { id: 25, name: 'Ai Smoke Driver', brand: 'Callaway', price: '6 499 kr', category: 'clubs', color: '#1e3a1e', url: 'https://www.dormy.com/search?q=callaway+ai+smoke+driver', desc: 'AI-optimized face for every swing type' },
+  { id: 26, name: 'Phantom X Putter', brand: 'Scotty Cameron', price: '4 999 kr', category: 'clubs', color: '#2d2d3d', url: 'https://www.golfwarehouse.co.uk/search?q=scotty+cameron+phantom+x', desc: 'Milled precision for a silky smooth stroke' },
+  { id: 27, name: 'T350 Iron Set', brand: 'Titleist', price: '11 990 kr', category: 'clubs', color: '#2d2d3d', url: 'https://www.dormy.com/search?q=titleist+t350+iron', desc: 'Distance with forgiveness in a players shape' },
+
+  // Clothing
+  { id: 6, name: 'Dri-FIT Tour Polo', brand: 'Nike', price: '799 kr', category: 'clothing', color: '#2a2a3a', url: 'https://www.dormy.com/search?q=nike+golf+polo', desc: 'Moisture-wicking performance polo for the course' },
+  { id: 12, name: 'Aero Jacket', brand: 'Galvin Green', price: '3 299 kr', category: 'clothing', color: '#1e3e2e', url: 'https://www.dormy.com/search?q=galvin+green+jacket', desc: 'Waterproof and breathable GORE-TEX protection' },
+  { id: 16, name: 'Rain Trousers', brand: 'Galvin Green', price: '2 799 kr', category: 'clothing', color: '#1e3e2e', url: 'https://www.dormy.com/search?q=galvin+green+trousers', desc: 'Stay dry in any Scandinavian weather' },
+  { id: 22, name: 'Ventus Lightweight Polo', brand: 'J.Lindeberg', price: '999 kr', category: 'clothing', color: '#2a2a4a', url: 'https://www.dormy.com/search?q=j.lindeberg+golf+polo', desc: 'Scandinavian style meets tour-level comfort' },
+  { id: 28, name: 'Tour Tech Golf Shorts', brand: 'Under Armour', price: '699 kr', category: 'clothing', color: '#3a2a2a', url: 'https://www.amazon.se/s?k=under+armour+golf+shorts', desc: 'Stretch-woven fabric for unrestricted movement' },
+  { id: 29, name: 'Golf Midlayer Half-Zip', brand: 'Adidas', price: '899 kr', category: 'clothing', color: '#1a2a3a', url: 'https://www.dormy.com/search?q=adidas+golf+midlayer', desc: 'Warm layering piece for cooler rounds' },
+  { id: 30, name: 'Tour Wind Vest', brand: 'Ping', price: '1 199 kr', category: 'clothing', color: '#1e2e3e', url: 'https://www.golfwarehouse.co.uk/search?q=ping+golf+wind+vest', desc: 'Lightweight wind protection without bulk' },
+
+  // Bags
+  { id: 7, name: 'Tour Staff Bag', brand: 'Titleist', price: '4 999 kr', category: 'bags', color: '#2d2d3d', url: 'https://www.dormy.com/search?q=titleist+staff+bag', desc: 'Premium tour-quality staff bag with full dividers' },
+  { id: 10, name: 'Carry Stand Bag', brand: 'Ping', price: '2 799 kr', category: 'bags', color: '#1e2e3e', url: 'https://www.dormy.com/search?q=ping+carry+stand+bag', desc: 'Lightweight carry bag with dual strap system' },
+  { id: 18, name: 'Cart Bag 14-Way', brand: 'Cobra', price: '2 499 kr', category: 'bags', color: '#3a2a1a', url: 'https://www.amazon.se/s?k=cobra+golf+cart+bag', desc: '14-way top with ample storage pockets' },
+  { id: 31, name: 'Flextech Crossover Stand Bag', brand: 'TaylorMade', price: '2 299 kr', category: 'bags', color: '#1a1a2e', url: 'https://www.dormy.com/search?q=taylormade+flextech+bag', desc: 'Self-adjusting stand system for stability' },
+  { id: 32, name: 'Sunday Carry Bag', brand: 'Callaway', price: '599 kr', category: 'bags', color: '#1e3a1e', url: 'https://www.amazon.se/s?k=callaway+sunday+carry+bag', desc: 'Ultra-light bag for quick practice rounds' },
+
+  // Shoes
+  { id: 8, name: 'ZG23 Golf Shoes', brand: 'Adidas', price: '1 899 kr', category: 'shoes', color: '#1a2a3a', url: 'https://www.dormy.com/search?q=adidas+zg23+golf', desc: 'Lightweight spikeless shoes with Boost cushioning' },
+  { id: 14, name: 'Tour360 Golf Shoes', brand: 'Adidas', price: '2 499 kr', category: 'shoes', color: '#1a2a3a', url: 'https://www.dormy.com/search?q=adidas+tour360+golf', desc: 'Classic spiked stability with modern comfort', featured: true },
+  { id: 21, name: 'Air Max 90 G', brand: 'Nike', price: '1 699 kr', category: 'shoes', color: '#2a2a3a', url: 'https://www.dormy.com/search?q=nike+air+max+90+golf', desc: 'Iconic Air Max design built for the fairway' },
+  { id: 33, name: 'Pro/SL Carbon', brand: 'FootJoy', price: '2 199 kr', category: 'shoes', color: '#2d3d2d', url: 'https://www.golfwarehouse.co.uk/search?q=footjoy+pro+sl+carbon', desc: 'Carbon fiber stability plate for all-day comfort' },
+  { id: 34, name: 'BIOM H4 Golf Shoes', brand: 'ECCO', price: '2 299 kr', category: 'shoes', color: '#3a2a2a', url: 'https://www.amazon.se/s?k=ecco+biom+h4+golf', desc: 'Premium leather with GORE-TEX waterproofing' },
+
+  // Accessories
+  { id: 2, name: 'Pro V1 Golf Balls (12-pack)', brand: 'Titleist', price: '599 kr', category: 'accessories', color: '#2d2d3d', url: 'https://www.dormy.com/search?q=titleist+pro+v1', desc: 'The #1 ball in golf with exceptional spin control', featured: true },
+  { id: 4, name: 'Tour B XS Golf Balls', brand: 'Bridgestone', price: '549 kr', category: 'accessories', color: '#3d2d1a', url: 'https://www.golfwarehouse.co.uk/search?q=bridgestone+tour+b+xs', desc: 'Reactive urethane cover for greenside spin' },
+  { id: 9, name: 'FlexFit Golf Cap', brand: 'Under Armour', price: '349 kr', category: 'accessories', color: '#3a2a2a', url: 'https://www.amazon.se/s?k=under+armour+golf+cap', desc: 'Stretch-fit cap with UV protection' },
+  { id: 15, name: 'Golf Rangefinder', brand: 'Bushnell', price: '3 499 kr', category: 'accessories', color: '#2a3a2a', url: 'https://www.dormy.com/search?q=bushnell+golf+rangefinder', desc: 'Precise distance measurement with slope technology' },
+  { id: 19, name: 'GPS Watch Approach S62', brand: 'Garmin', price: '4 999 kr', category: 'accessories', color: '#2a2a3a', url: 'https://www.dormy.com/search?q=garmin+approach+s62', desc: 'Full-color GPS watch with virtual caddie' },
+  { id: 20, name: 'Tour Response Golf Balls', brand: 'TaylorMade', price: '449 kr', category: 'accessories', color: '#1a1a2e', url: 'https://www.amazon.se/s?k=taylormade+tour+response', desc: 'Tour-level performance at a great value' },
+  { id: 24, name: 'Waterproof Golf Glove', brand: 'FootJoy', price: '399 kr', category: 'accessories', color: '#2d3d2d', url: 'https://www.dormy.com/search?q=footjoy+waterproof+glove', desc: 'Superior grip even in wet conditions' },
+  { id: 35, name: 'Golf Towel Microfiber', brand: 'Titleist', price: '249 kr', category: 'accessories', color: '#2d2d3d', url: 'https://www.amazon.se/s?k=titleist+golf+towel', desc: 'Large microfiber towel with carabiner clip' },
+  { id: 36, name: 'Performance Tees (100-pack)', brand: 'Zero Friction', price: '149 kr', category: 'accessories', color: '#3a2a1a', url: 'https://www.amazon.se/s?k=zero+friction+golf+tees', desc: 'Durable 3-prong tees for consistent height' },
+  { id: 37, name: 'Golf Umbrella 68"', brand: 'Titleist', price: '699 kr', category: 'accessories', color: '#2d2d3d', url: 'https://www.dormy.com/search?q=titleist+golf+umbrella', desc: 'Double canopy windproof umbrella' },
+  { id: 38, name: 'Laser Rangefinder Pro XE', brand: 'Bushnell', price: '5 499 kr', category: 'accessories', color: '#2a3a2a', url: 'https://www.golfwarehouse.co.uk/search?q=bushnell+pro+xe+rangefinder', desc: 'Tour-trusted rangefinder with slope switch' },
+];
+
+const shopCategoriesConfig = [
+  { key: 'all', label: 'shop_all' },
+  { key: 'clubs', label: 'shop_clubs_cat' },
+  { key: 'clothing', label: 'shop_clothing' },
+  { key: 'bags', label: 'shop_bags' },
+  { key: 'shoes', label: 'shop_shoes' },
+  { key: 'accessories', label: 'shop_accessories' },
+];
+
+function initShop() {
+  shopInitialized = true;
+  renderShopCategories();
+  renderShopProducts();
+}
+
+function renderShopCategories() {
+  const el = document.getElementById('shop-categories');
+  el.innerHTML = shopCategoriesConfig.map(cat =>
+    `<button class="shop-cat-btn ${cat.key === shopCategory ? 'active' : ''}" data-cat="${cat.key}">${t(cat.label)}</button>`
+  ).join('');
+  el.querySelectorAll('.shop-cat-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      shopCategory = btn.dataset.cat;
+      el.querySelectorAll('.shop-cat-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === shopCategory));
+      renderShopProducts();
+    });
+  });
+}
+
+const shopCategoryEmojis = { clubs: '\u{1F3CC}\uFE0F', clothing: '\u{1F455}', bags: '\u{1F392}', shoes: '\u{1F45F}', accessories: '\u26F3' };
+
+function renderShopProducts() {
+  const grid = document.getElementById('shop-grid');
+  const filtered = shopCategory === 'all' ? shopProducts : shopProducts.filter(p => p.category === shopCategory);
+
+  grid.innerHTML = filtered.map(p => {
+    const emoji = shopCategoryEmojis[p.category] || '\u26F3';
+    const featuredBadge = p.featured ? `<div class="product-featured">${t('shop_featured')}</div>` : '';
+    return `
+      <div class="product-card">
+        ${featuredBadge}
+        <div class="product-img" style="background:linear-gradient(135deg, ${p.color}, ${p.color}dd)">
+          <span>${emoji}</span>
+        </div>
+        <div class="product-body">
+          <div class="product-brand">${p.brand}</div>
+          <div class="product-name">${p.name}</div>
+          ${p.desc ? `<div class="product-desc">${p.desc}</div>` : ''}
+          <div class="product-price">${p.price}</div>
+          <a class="product-buy" href="${p.url}" target="_blank" rel="noopener">${t('shop_btn')} \u2192</a>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── TRIPS VIEW ────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+
+function renderTrips() {
+  const list = document.getElementById('trips-list');
+  const saved = savedTrips.map(id => allClubs.find(c => c.id === id || c.id == id)).filter(Boolean);
+
+  if (!saved.length) {
+    list.innerHTML = `
+      <div class="trips-empty">
+        <div class="trips-empty-icon">🧳</div>
+        <p>${t('trips_empty')}</p>
+      </div>
+    `;
+    return;
+  }
+
+  list.innerHTML = saved.map(club => {
+    let tags = '';
+    if (club.holes) tags += `<span class="tag tag-holes">⬡ ${club.holes} hål</span>`;
+    if (club.hasLunch) tags += `<span class="tag tag-lunch">${t('lunch')}</span>`;
+    tags += courseTypeTag(club);
+    const countryFlags = { SE: '🇸🇪', DK: '🇩🇰', ES: '🇪🇸' };
+    tags += `<span class="tag" style="background:rgba(255,255,255,0.05);color:var(--text-secondary)">${countryFlags[club.country] || ''} ${club.country}</span>`;
+
+    return `
+      <div class="trip-card" data-id="${club.id}">
+        <div class="trip-card-info">
+          <div class="trip-card-name">${club.name}</div>
+          <div class="trip-card-tags">${tags}</div>
+        </div>
+        <div class="trip-card-actions">
+          <button class="trip-map-btn" data-id="${club.id}">📍 Map</button>
+          <button class="trip-remove-btn" data-id="${club.id}">✕</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Event handlers
+  list.querySelectorAll('.trip-remove-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = parseInt(btn.dataset.id) || btn.dataset.id;
+      savedTrips = savedTrips.filter(s => s != id);
+      localStorage.setItem('golf_saved_trips', JSON.stringify(savedTrips));
+      syncTripsToSupabase();
+      renderTrips();
+    });
+  });
+
+  list.querySelectorAll('.trip-map-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const club = allClubs.find(c => c.id == btn.dataset.id);
+      if (!club) return;
+      switchTab('courses');
+      setTimeout(() => {
+        map.setView([club.lat, club.lon], 14);
+        const entry = markers.find(m => m.club.id === club.id);
+        if (entry) clusterGroup.zoomToShowLayer(entry.marker, () => entry.marker.openPopup());
+      }, 100);
+    });
+  });
+}
+
+// Share trip button
+document.getElementById('trips-share-btn').addEventListener('click', () => {
+  if (!savedTrips.length) return;
+  const url = window.location.origin + window.location.pathname + '?trip=' + savedTrips.join(',');
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.getElementById('trips-share-btn');
+    const orig = btn.textContent;
+    btn.textContent = t('trip_shared');
+    setTimeout(() => btn.textContent = orig, 2000);
+  }).catch(() => {
+    prompt('Copy this link:', window.location.origin + window.location.pathname + '?trip=' + savedTrips.join(','));
+  });
+});
+
+// Clear all trips
+document.getElementById('trips-clear-btn').addEventListener('click', () => {
+  savedTrips = [];
+  localStorage.setItem('golf_saved_trips', JSON.stringify(savedTrips));
+  syncTripsToSupabase();
+  renderTrips();
+});
+
+// Load trip from URL params on page load
+(function loadTripFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const tripParam = params.get('trip');
+  if (tripParam) {
+    const ids = tripParam.split(',').map(id => parseInt(id) || id);
+    savedTrips = [...new Set([...savedTrips, ...ids])];
+    localStorage.setItem('golf_saved_trips', JSON.stringify(savedTrips));
+    // Switch to trips tab after data loads
+    setTimeout(() => switchTab('trips'), 1500);
+  }
+})();
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── APPLY LANGUAGE TO NEW VIEWS ──────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+
+const origApplyLanguage = applyLanguage;
+applyLanguage = function(lang) {
+  origApplyLanguage(lang);
+  // Re-render dynamic views if they were loaded
+  if (shopInitialized) { renderShopCategories(); renderShopProducts(); }
+  if (activeTab === 'trips') renderTrips();
+  if (newsLoaded && newsCache) renderNews(newsCache);
+  // Update user button text on language change
+  updateUserButton();
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── SUPABASE AUTH & TRIP SYNC ──────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── Trip Sync ─────────────────────────────────────────────────────────────
+async function syncTripsFromSupabase() {
+  if (!currentUser) return;
+  try {
+    const { data } = await supabaseClient.from('saved_trips').select('*').eq('user_id', currentUser.id).limit(1);
+    if (data && data[0]) {
+      const remoteTrips = data[0].club_ids || [];
+      // Merge: combine local + remote, deduplicate
+      savedTrips = [...new Set([...savedTrips, ...remoteTrips])];
+      localStorage.setItem('golf_saved_trips', JSON.stringify(savedTrips));
+      // Push merged result back
+      await supabaseClient.from('saved_trips').update({ club_ids: savedTrips, updated_at: new Date().toISOString() }).eq('id', data[0].id);
+    } else if (savedTrips.length > 0) {
+      // No remote row yet but we have local trips - create one
+      await supabaseClient.from('saved_trips').insert({ user_id: currentUser.id, club_ids: savedTrips });
+    }
+    if (activeTab === 'trips') renderTrips();
+  } catch (e) { console.warn('Trip sync from Supabase failed:', e); }
+}
+
+async function syncTripsToSupabase() {
+  if (!currentUser) return;
+  try {
+    const { data } = await supabaseClient.from('saved_trips').select('id').eq('user_id', currentUser.id).limit(1);
+    if (data && data[0]) {
+      await supabaseClient.from('saved_trips').update({ club_ids: savedTrips, updated_at: new Date().toISOString() }).eq('id', data[0].id);
+    } else {
+      await supabaseClient.from('saved_trips').insert({ user_id: currentUser.id, club_ids: savedTrips });
+    }
+  } catch (e) { console.warn('Trip sync to Supabase failed:', e); }
+}
+
+// ── Auth UI ───────────────────────────────────────────────────────────────
+const authOverlay = document.getElementById('auth-overlay');
+const authForm = document.getElementById('auth-form');
+const authMessage = document.getElementById('auth-message');
+const authSubmitBtn = document.getElementById('auth-submit-btn');
+const userBtn = document.getElementById('user-btn');
+const userDropdown = document.getElementById('user-dropdown');
+let authMode = 'login'; // 'login' or 'signup'
+
+function openAuth() { authOverlay.classList.add('open'); authMessage.textContent = ''; }
+function closeAuth() { authOverlay.classList.remove('open'); authMessage.textContent = ''; }
+
+document.getElementById('auth-close').addEventListener('click', closeAuth);
+authOverlay.addEventListener('click', (e) => { if (e.target === authOverlay) closeAuth(); });
+
+// Tab switching
+document.querySelectorAll('.auth-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    authMode = tab.dataset.auth;
+    authSubmitBtn.textContent = authMode === 'login' ? 'Sign In' : 'Create Account';
+    authMessage.textContent = '';
+  });
+});
+
+// Form submit
+authForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  authMessage.textContent = '';
+  authSubmitBtn.disabled = true;
+  authSubmitBtn.textContent = '...';
+
+  try {
+    let result;
+    if (authMode === 'login') {
+      result = await supabaseClient.auth.signInWithPassword({ email, password });
+    } else {
+      result = await supabaseClient.auth.signUp({ email, password });
+    }
+
+    if (result.error) {
+      authMessage.className = 'auth-error';
+      authMessage.textContent = result.error.message;
+    } else if (authMode === 'signup' && result.data?.user && !result.data.session) {
+      authMessage.className = 'auth-success';
+      authMessage.textContent = 'Check your email for a confirmation link!';
+    } else {
+      closeAuth();
+    }
+  } catch (err) {
+    authMessage.className = 'auth-error';
+    authMessage.textContent = 'An error occurred. Please try again.';
+  }
+  authSubmitBtn.disabled = false;
+  authSubmitBtn.textContent = authMode === 'login' ? 'Sign In' : 'Create Account';
+});
+
+// User button click
+userBtn.addEventListener('click', () => {
+  if (!currentUser) {
+    openAuth();
+  } else {
+    userDropdown.classList.toggle('open');
+  }
+});
+
+// Close dropdown on outside click
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#user-menu')) {
+    userDropdown.classList.remove('open');
+  }
+});
+
+// Logout
+document.getElementById('user-logout-btn').addEventListener('click', async () => {
+  await supabaseClient.auth.signOut();
+  userDropdown.classList.remove('open');
+});
+
+// Update user button UI
+function updateUserButton() {
+  if (currentUser) {
+    const displayName = currentUser.email || 'Account';
+    const shortEmail = displayName.length > 20 ? displayName.slice(0, 18) + '...' : displayName;
+    userBtn.textContent = '👤 ' + shortEmail + ' ▾';
+    userBtn.style.background = 'var(--accent-dim)';
+    userBtn.style.borderColor = 'rgba(52,211,153,0.3)';
+    userBtn.style.color = 'var(--accent)';
+    userBtn.removeAttribute('data-i18n');
+    document.getElementById('user-logout-btn').textContent = t('logout');
+  } else {
+    userBtn.textContent = t('login');
+    userBtn.setAttribute('data-i18n', 'login');
+    userBtn.style.background = '';
+    userBtn.style.borderColor = '';
+    userBtn.style.color = '';
+  }
+}
+
+// Auth state change listener
+supabaseClient.auth.onAuthStateChange((event, session) => {
+  currentUser = session?.user || null;
+  updateUserButton();
+  if (event === 'SIGNED_IN' && currentUser) {
+    syncTripsFromSupabase();
+  }
+});
+
+// Check initial session
+(async function initAuth() {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  currentUser = session?.user || null;
+  updateUserButton();
+  if (currentUser) syncTripsFromSupabase();
+})();
+
+</script>
+</body>
+</html>
