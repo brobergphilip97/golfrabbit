@@ -650,12 +650,16 @@
     /* ── COURSES LAYOUT (filter sidebar + map + grid) ────────────────── */
     #courses-layout {
       display: flex;
-      height: 55vh;
-      min-height: 400px;
+      height: 65vh;
+      min-height: 200px;
+      max-height: 85vh;
       flex-shrink: 0;
+      position: relative;
     }
     #filter-sidebar {
       width: 260px;
+      min-width: 180px;
+      max-width: 400px;
       flex-shrink: 0;
       background: rgba(10,10,10,0.95);
       border-right: 1px solid var(--border);
@@ -669,11 +673,49 @@
     }
     #filter-sidebar::-webkit-scrollbar { width: 3px; }
     #filter-sidebar::-webkit-scrollbar-thumb { background: #222; border-radius: 3px; }
+
+    /* Horizontal resize handle (sidebar ↔ map) */
+    #sidebar-resize-h {
+      width: 5px;
+      cursor: col-resize;
+      background: transparent;
+      flex-shrink: 0;
+      transition: background 0.15s;
+      z-index: 10;
+    }
+    #sidebar-resize-h:hover, #sidebar-resize-h.dragging { background: var(--accent); }
+
     #map-container {
       flex: 1;
       position: relative;
     }
     #map { width: 100%; height: 100%; }
+
+    /* Vertical resize handle (map ↕ grid) */
+    #map-resize-v {
+      height: 6px;
+      cursor: row-resize;
+      background: transparent;
+      flex-shrink: 0;
+      transition: background 0.15s;
+      position: relative;
+      z-index: 10;
+    }
+    #map-resize-v:hover, #map-resize-v.dragging { background: var(--accent); }
+    #map-resize-v::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 40px;
+      height: 3px;
+      background: var(--text-tertiary);
+      border-radius: 2px;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    #map-resize-v:hover::after { opacity: 1; }
 
     /* ── FILTER SIDEBAR COMPONENTS ────────────────────────────────────── */
     .fs-section { display: flex; flex-direction: column; gap: 8px; }
@@ -753,27 +795,46 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 16px;
+      padding: 12px 16px;
       transition: all 0.2s;
       cursor: pointer;
     }
     .grid-card:hover {
       border-color: rgba(255,255,255,0.15);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
     }
+    .grid-card.expanded {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+    }
+    /* Compact view: just name + country + chevron */
     .grid-card-top {
-      display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;
+      display: flex; justify-content: space-between; align-items: center;
     }
     .grid-card-name {
-      font-size: 0.92rem; font-weight: 600; color: var(--text); line-height: 1.3;
+      font-size: 0.88rem; font-weight: 600; color: var(--text); line-height: 1.3;
     }
-    .grid-card-country { font-size: 0.75rem; color: var(--text-tertiary); margin-top: 2px; }
+    .grid-card-country {
+      font-size: 0.72rem; color: var(--text-tertiary); margin-left: 8px; white-space: nowrap;
+    }
+    .grid-card-top-left { display: flex; align-items: baseline; flex: 1; min-width: 0; }
+    .grid-card-top-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .grid-card-chevron {
+      font-size: 0.7rem; color: var(--text-tertiary); transition: transform 0.2s;
+    }
+    .grid-card.expanded .grid-card-chevron { transform: rotate(90deg); }
     .grid-card-save {
-      background: none; border: none; font-size: 1.1rem; cursor: pointer;
+      background: none; border: none; font-size: 1rem; cursor: pointer;
       color: var(--text-tertiary); transition: color 0.15s; flex-shrink: 0; padding: 0;
     }
     .grid-card-save.saved { color: #f87171; }
+    /* Expanded details (hidden by default) */
+    .grid-card-details {
+      max-height: 0; overflow: hidden; transition: max-height 0.25s ease, margin 0.25s;
+      margin-top: 0;
+    }
+    .grid-card.expanded .grid-card-details {
+      max-height: 200px; margin-top: 12px;
+    }
     .grid-card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
     .grid-card-tag {
       font-size: 0.68rem; font-weight: 500; padding: 3px 8px;
@@ -783,7 +844,7 @@
     .grid-card-tag-golfamore { background: rgba(251,191,36,0.15); color: #fbbf24; }
     .grid-card-tag-lunch { background: rgba(251,146,60,0.12); color: #fb923c; }
     .grid-card-actions {
-      display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap;
+      display: flex; gap: 6px; flex-wrap: wrap;
     }
     .grid-card-actions a {
       font-size: 0.72rem; font-weight: 600; padding: 5px 10px;
@@ -2135,10 +2196,12 @@
         <button id="clear-filters-btn" class="fs-clear" data-i18n="clear_filters">✕ Clear filters</button>
       </div>
     </div>
+    <div id="sidebar-resize-h"></div>
     <div id="map-container">
       <div id="map"></div>
     </div>
   </div>
+  <div id="map-resize-v"></div>
   <div id="clubs-grid-section">
     <div id="clubs-grid-header">
       <h3>Showing <strong><span id="count">0</span></strong> clubs</h3>
@@ -3200,29 +3263,37 @@ function appendGridCards(count) {
 
     card.innerHTML = `
       <div class="grid-card-top">
-        <div>
+        <div class="grid-card-top-left">
           <div class="grid-card-name">${club.name}</div>
-          <div class="grid-card-country">${countryFlag} ${countryName}</div>
+          <span class="grid-card-country">${countryFlag} ${countryName}</span>
         </div>
-        <button class="grid-card-save ${isSaved ? 'saved' : ''}" data-id="${club.id}">
-          ${isSaved ? '❤️' : '🤍'}
-        </button>
+        <div class="grid-card-top-right">
+          <button class="grid-card-save ${isSaved ? 'saved' : ''}" data-id="${club.id}">${isSaved ? '❤️' : '🤍'}</button>
+          <span class="grid-card-chevron">▶</span>
+        </div>
       </div>
-      ${tags ? `<div class="grid-card-tags">${tags}</div>` : ''}
-      <div class="grid-card-actions">
-        <a class="card-action-btn card-action-btn-web" href="${webLink}" target="_blank" rel="noopener">🌐 Web</a>
-        <a class="card-action-btn card-action-btn-book" href="${bookLink}" target="_blank" rel="noopener">📅 Book</a>
-        <a class="card-action-btn card-action-btn-gm" href="https://www.google.com/maps/search/${encodeURIComponent(club.name)}" target="_blank" rel="noopener">📍 Map</a>
+      <div class="grid-card-details">
+        ${tags ? `<div class="grid-card-tags">${tags}</div>` : ''}
+        <div class="grid-card-actions">
+          <a class="card-action-btn card-action-btn-web" href="${webLink}" target="_blank" rel="noopener">🌐 Web</a>
+          <a class="card-action-btn card-action-btn-book" href="${bookLink}" target="_blank" rel="noopener">📅 Book</a>
+          <a class="card-action-btn card-action-btn-gm" href="https://www.google.com/maps/search/${encodeURIComponent(club.name)}" target="_blank" rel="noopener">📍 Map</a>
+        </div>
       </div>
     `;
 
-    // Click card to zoom map
+    // Click card to expand/collapse + zoom map
     card.addEventListener('click', (e) => {
       if (e.target.closest('a') || e.target.closest('.grid-card-save')) return;
-      map.setView([club.lat, club.lon], 14);
-      const entry = markers.find(m => m.club.id === club.id);
-      if (entry) clusterGroup.zoomToShowLayer(entry.marker, () => entry.marker.openPopup());
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      const wasExpanded = card.classList.contains('expanded');
+      // Collapse any other expanded card
+      document.querySelectorAll('.grid-card.expanded').forEach(c => { if (c !== card) c.classList.remove('expanded'); });
+      card.classList.toggle('expanded');
+      if (!wasExpanded) {
+        map.setView([club.lat, club.lon], 14);
+        const entry = markers.find(m => m.club.id === club.id);
+        if (entry) clusterGroup.zoomToShowLayer(entry.marker, () => entry.marker.openPopup());
+      }
     });
 
     // Save button
@@ -3247,6 +3318,80 @@ function appendGridCards(count) {
 
 // Load more button
 document.getElementById('load-more-btn').addEventListener('click', () => appendGridCards(GRID_PAGE_SIZE));
+
+// ── Resize handles (sidebar width + map height) ──────────────────────────
+(function() {
+  const layout = document.getElementById('courses-layout');
+  const sidebar = document.getElementById('filter-sidebar');
+  const hHandle = document.getElementById('sidebar-resize-h');
+  const vHandle = document.getElementById('map-resize-v');
+  let dragType = null;
+
+  // Horizontal: sidebar width
+  hHandle.addEventListener('mousedown', e => {
+    e.preventDefault();
+    dragType = 'h';
+    hHandle.classList.add('dragging');
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  });
+
+  // Vertical: map/layout height
+  vHandle.addEventListener('mousedown', e => {
+    e.preventDefault();
+    dragType = 'v';
+    vHandle.classList.add('dragging');
+    document.body.style.cursor = 'row-resize';
+    document.body.style.userSelect = 'none';
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!dragType) return;
+    if (dragType === 'h') {
+      const rect = layout.getBoundingClientRect();
+      let w = e.clientX - rect.left;
+      w = Math.max(180, Math.min(w, 400));
+      sidebar.style.width = w + 'px';
+      map.invalidateSize();
+    } else if (dragType === 'v') {
+      const rect = layout.getBoundingClientRect();
+      let h = e.clientY - rect.top;
+      h = Math.max(200, Math.min(h, window.innerHeight * 0.85));
+      layout.style.height = h + 'px';
+      map.invalidateSize();
+    }
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!dragType) return;
+    hHandle.classList.remove('dragging');
+    vHandle.classList.remove('dragging');
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+    dragType = null;
+    map.invalidateSize();
+  });
+
+  // Touch support for mobile
+  hHandle.addEventListener('touchstart', e => { dragType = 'h'; }, { passive: true });
+  vHandle.addEventListener('touchstart', e => { dragType = 'v'; }, { passive: true });
+  document.addEventListener('touchmove', e => {
+    if (!dragType) return;
+    const touch = e.touches[0];
+    if (dragType === 'h') {
+      const rect = layout.getBoundingClientRect();
+      let w = touch.clientX - rect.left;
+      sidebar.style.width = Math.max(180, Math.min(w, 400)) + 'px';
+      map.invalidateSize();
+    } else if (dragType === 'v') {
+      const rect = layout.getBoundingClientRect();
+      let h = touch.clientY - rect.top;
+      layout.style.height = Math.max(200, Math.min(h, window.innerHeight * 0.85)) + 'px';
+      map.invalidateSize();
+    }
+  }, { passive: true });
+  document.addEventListener('touchend', () => { dragType = null; map.invalidateSize(); });
+})();
 
 // Sort handler
 document.getElementById('sort-select').addEventListener('change', () => render());
