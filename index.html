@@ -86,40 +86,7 @@
       flex-shrink: 0;
     }
 
-    /* search */
-    #search-wrap {
-      flex: 1;
-      max-width: 280px;
-      position: relative;
-    }
-
-    #search {
-      width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      color: var(--text);
-      padding: 8px 12px 8px 34px;
-      font-size: 0.82rem;
-      outline: none;
-      transition: border-color 0.2s, background 0.2s;
-      font-family: inherit;
-    }
-    #search:focus {
-      border-color: var(--accent);
-      background: rgba(52,211,153,0.05);
-    }
-    #search::placeholder { color: var(--text-tertiary); }
-
-    .search-icon {
-      position: absolute;
-      left: 11px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--text-tertiary);
-      pointer-events: none;
-      font-size: 13px;
-    }
+    /* (header search removed — search is now only in the filter sidebar) */
 
     /* ── HEADER ACTION BUTTONS ───────────────────────────────────────── */
     .header-btn {
@@ -444,15 +411,12 @@
     /* ── RANKINGS MODAL ──────────────────────────────────────────────── */
     #rankings-overlay {
       position: fixed; inset: 0;
-      background: rgba(0,0,0,0.7);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(12px);
       z-index: 2000;
       display: none;
       align-items: center;
       justify-content: center;
-      padding: 24px;
-      animation: fadeIn 0.2s ease;
     }
     #rankings-overlay.open { display: flex; }
 
@@ -460,39 +424,35 @@
     @keyframes slideUp { from { transform:translateY(20px); opacity:0 } to { transform:translateY(0); opacity:1 } }
 
     #rankings-modal {
-      background: #111;
-      border: 1px solid rgba(255,255,255,0.1);
+      background: var(--bg);
+      border: 1px solid var(--border);
       border-radius: 20px;
-      width: 100%;
+      width: 94%;
       max-width: 700px;
-      max-height: 80vh;
+      max-height: 85vh;
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      box-shadow: 0 24px 80px rgba(0,0,0,0.8);
-      animation: slideUp 0.22s ease;
     }
 
     #rankings-modal-header {
-      padding: 20px 24px 0;
       display: flex;
-      align-items: flex-start;
       justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
       flex-shrink: 0;
     }
-
     #rankings-modal-header h2 {
-      font-size: 1.2rem;
+      font-size: 1.15rem;
       font-weight: 700;
-      letter-spacing: -0.4px;
       color: var(--text);
     }
     #rankings-modal-header p {
       font-size: 0.75rem;
       color: var(--text-tertiary);
-      margin-top: 3px;
+      margin-top: 2px;
     }
-
     #rankings-close {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -500,112 +460,126 @@
       color: var(--text-secondary);
       width: 32px; height: 32px;
       display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-      font-size: 1rem;
+      cursor: pointer; font-size: 0.9rem;
       transition: all 0.15s;
-      flex-shrink: 0;
     }
-    #rankings-close:hover { background: var(--surface-hover); color: var(--text); }
+    #rankings-close:hover { border-color: var(--accent); color: var(--text); }
 
+    /* Tabs: horizontal pills */
     #rankings-tabs {
       display: flex;
-      gap: 2px;
-      padding: 16px 24px 0;
-      flex-shrink: 0;
+      gap: 6px;
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--border);
       overflow-x: auto;
+      flex-shrink: 0;
       scrollbar-width: none;
     }
     #rankings-tabs::-webkit-scrollbar { display: none; }
 
     .rtab {
-      background: transparent;
-      border: 1px solid transparent;
-      border-radius: 9px;
-      color: var(--text-tertiary);
-      padding: 7px 14px;
-      font-size: 0.76rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text-secondary);
+      padding: 8px 16px;
+      font-size: 0.78rem;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.15s;
       font-family: inherit;
       white-space: nowrap;
-      letter-spacing: 0.1px;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
     }
-    .rtab:hover { color: var(--text-secondary); background: var(--surface); }
+    .rtab:hover { border-color: rgba(255,255,255,0.15); color: var(--text); }
     .rtab.active {
       background: var(--accent-dim);
-      border-color: rgba(52,211,153,0.25);
+      border-color: var(--accent);
       color: var(--accent);
     }
 
+    /* Category description */
+    .rank-category-note {
+      padding: 12px 24px;
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+      line-height: 1.5;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.01);
+      flex-shrink: 0;
+    }
+
+    /* Rankings list */
     #rankings-body {
       flex: 1;
       overflow-y: auto;
-      padding: 16px 24px 24px;
+      padding: 12px 24px 20px;
       scrollbar-width: thin;
       scrollbar-color: #222 transparent;
-    }
-    #rankings-body::-webkit-scrollbar { width: 3px; }
-    #rankings-body::-webkit-scrollbar-thumb { background: #222; border-radius: 3px; }
-
-    .rank-category-note {
-      font-size: 0.73rem;
-      color: var(--text-tertiary);
-      margin-bottom: 14px;
-      padding: 8px 12px;
-      background: var(--surface);
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      line-height: 1.5;
     }
 
     .rank-item {
       display: flex;
       align-items: center;
       gap: 14px;
-      padding: 12px 14px;
-      border-radius: 12px;
-      cursor: pointer;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
       transition: background 0.15s;
-      margin-bottom: 3px;
     }
-    .rank-item:hover { background: var(--surface-hover); }
+    .rank-item:last-child { border-bottom: none; }
+    .rank-item:hover { background: var(--surface); margin: 0 -12px; padding-left: 12px; padding-right: 12px; border-radius: 10px; }
 
-    .rank-num {
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: var(--text-tertiary);
-      width: 22px;
+    .rank-pos {
+      width: 32px;
       text-align: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
       flex-shrink: 0;
     }
-    .rank-num.gold { color: #fbbf24; font-size: 1rem; }
-    .rank-num.silver { color: #94a3b8; font-size: 1rem; }
-    .rank-num.bronze { color: #cd7c3f; font-size: 1rem; }
+    .rank-pos-1 { color: #fbbf24; font-size: 1.1rem; }
+    .rank-pos-2 { color: #d1d5db; font-size: 1rem; }
+    .rank-pos-3 { color: #d97706; font-size: 1rem; }
 
-    .rank-info { flex: 1; min-width: 0; }
+    .rank-info {
+      flex: 1;
+      min-width: 0;
+    }
     .rank-name {
-      font-size: 0.86rem;
+      font-size: 0.88rem;
       font-weight: 600;
       color: var(--text);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      margin-bottom: 4px;
     }
-    .rank-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+    .rank-meta {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+      flex-wrap: wrap;
+    }
+    .rank-meta-tag {
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.05);
+      color: var(--text-tertiary);
+    }
 
-    .rank-score {
-      flex-shrink: 0;
+    .rank-score-box {
       text-align: right;
+      flex-shrink: 0;
     }
     .rank-score-val {
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       font-weight: 700;
-      color: var(--text);
+      color: var(--accent);
     }
     .rank-score-label {
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       color: var(--text-tertiary);
       margin-top: 1px;
     }
@@ -615,27 +589,35 @@
       gap: 5px;
       flex-shrink: 0;
     }
-
-    .rank-btn {
-      padding: 5px 10px;
-      border-radius: 7px;
-      font-size: 0.68rem;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: inherit;
+    .rank-action-btn {
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
       text-decoration: none;
+      font-size: 0.75rem;
       transition: all 0.15s;
-      white-space: nowrap;
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-secondary);
+      cursor: pointer;
     }
-    .rank-btn-yt { background: rgba(255,0,0,0.1); border: 1px solid rgba(255,0,0,0.18); color: #f87171; }
-    .rank-btn-yt:hover { background: rgba(255,0,0,0.18); }
-    .rank-btn-gm { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.18); color: #fbbf24; }
-    .rank-btn-gm:hover { background: rgba(251,191,36,0.18); }
-    .rank-btn-map { background: var(--surface); border: 1px solid var(--border); color: var(--text-secondary); }
-    .rank-btn-map:hover { background: var(--surface-hover); color: var(--text); }
+    .rank-action-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    .rank-empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-tertiary);
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 768px) {
+      #rankings-modal { width: 100%; max-width: none; border-radius: 16px 16px 0 0; max-height: 90vh; margin-top: auto; }
+      #rankings-modal-header { padding: 16px 18px 12px; }
+      #rankings-tabs { padding: 10px 18px; }
+      #rankings-body { padding: 10px 18px 16px; }
+      .rank-item { gap: 10px; }
+      .rank-actions { display: none; }
+    }
 
     /* ── LAYOUT ──────────────────────────────────────────────────────── */
     .main {
@@ -1418,10 +1400,7 @@
       .brand-icon { width: 26px; height: 26px; font-size: 13px; }
       .divider { display: none; }
 
-      /* Hide non-essential header items on mobile */
-      #search-wrap { order: 10; flex: 1 1 100%; max-width: none; margin-top: 2px; }
-      #search { padding: 8px 12px 8px 30px; font-size: 0.85rem; }
-      .search-icon { font-size: 12px; left: 10px; }
+      /* (mobile #search-wrap rules removed — element no longer exists) */
 
       .nav-tabs { order: 1; }
       .nav-tab { font-size: 0.72rem; padding: 5px 10px; }
@@ -1504,10 +1483,7 @@
     body.tab-news .karta-only,
     body.tab-shop .karta-only,
     body.tab-trips .karta-only { display: none !important; }
-    body.tab-live #search-wrap,
-    body.tab-news #search-wrap,
-    body.tab-shop #search-wrap,
-    body.tab-trips #search-wrap { display: none !important; }
+    /* (header #search-wrap visibility rules removed — element no longer exists) */
 
     /* ── NEW VIEW CONTAINERS ─────────────────────────────────────────── */
     #view-news, #view-shop, #view-trips {
@@ -2077,13 +2053,6 @@
     <button class="nav-tab" data-tab="news" data-i18n="tab_news">📰 News</button>
     <button class="nav-tab" data-tab="shop" data-i18n="tab_shop">🛒 Shop</button>
     <button class="nav-tab" data-tab="trips" data-i18n="tab_trips">🧳 Trips</button>
-  </div>
-
-  <div class="divider"></div>
-
-  <div id="search-wrap">
-    <span class="search-icon">⌕</span>
-    <input id="search" type="text" placeholder="Sök golfklubb..." autocomplete="off" data-i18n-placeholder="search_clubs" />
   </div>
 
   <div class="divider karta-only"></div>
@@ -3127,10 +3096,8 @@ function buildPopup(club) {
 
 // ── Render ─────────────────────────────────────────────────────────────────
 function render() {
-  // Sync both search inputs
-  const headerSearch = document.getElementById('search');
   const sidebarSearch = document.getElementById('search-sidebar');
-  const q = (headerSearch.value || sidebarSearch.value || '').toLowerCase().trim();
+  const q = (sidebarSearch.value || '').toLowerCase().trim();
 
   let filtered = allClubs.filter(c => {
     if (q && !c.name.toLowerCase().includes(q)) return false;
@@ -3399,14 +3366,8 @@ document.getElementById('sort-select').addEventListener('change', () => render()
 // ── Controls ───────────────────────────────────────────────────────────────
 let searchDebounce = null;
 
-// Sync header search and sidebar search
-document.getElementById('search').addEventListener('input', function() {
-  document.getElementById('search-sidebar').value = this.value;
-  clearTimeout(searchDebounce);
-  searchDebounce = setTimeout(render, 180);
-});
+// Sidebar search input triggers render
 document.getElementById('search-sidebar').addEventListener('input', function() {
-  document.getElementById('search').value = this.value;
   clearTimeout(searchDebounce);
   searchDebounce = setTimeout(render, 180);
 });
@@ -3479,7 +3440,6 @@ document.getElementById('clear-filters-btn').addEventListener('click', function(
   document.getElementById('rated-toggle').checked = false;
   document.getElementById('golfamore-toggle').checked = false;
   document.getElementById('search-sidebar').value = '';
-  document.getElementById('search').value = '';
   render();
 });
 
@@ -3719,6 +3679,8 @@ function openRankings() {
 
 function closeRankings() {
   document.getElementById('rankings-overlay').classList.remove('open');
+  const noteEl = document.querySelector('.rank-category-note');
+  if (noteEl) noteEl.remove();
 }
 
 function renderRankingsTabs() {
@@ -3741,55 +3703,55 @@ function renderRankingsBody() {
   const cat = getCategories().find(c => c.id === activeRankTab);
   const body = document.getElementById('rankings-body');
 
+  // Show category note above the list (outside scrollable body)
+  let noteEl = document.querySelector('.rank-category-note');
+  if (!noteEl) {
+    noteEl = document.createElement('div');
+    noteEl.className = 'rank-category-note';
+    body.parentNode.insertBefore(noteEl, body);
+  }
+  noteEl.textContent = cat.note;
+
   const ranked = [...allClubs]
     .filter(cat.filter)
     .sort((a, b) => cat.sort(b) - cat.sort(a))
     .slice(0, 15);
 
   if (!ranked.length) {
-    body.innerHTML = `<div style="padding:32px;text-align:center;color:var(--text-tertiary);font-size:0.82rem;">${t('no_data')}</div>`;
+    body.innerHTML = `<div class="rank-empty">${t('no_data')}</div>`;
     return;
   }
 
-  const medalNum = (i) => {
-    if (i === 0) return '<span class="rank-num gold">🥇</span>';
-    if (i === 1) return '<span class="rank-num silver">🥈</span>';
-    if (i === 2) return '<span class="rank-num bronze">🥉</span>';
-    return `<span class="rank-num">${i + 1}</span>`;
-  };
-
-  body.innerHTML = `
-    <div class="rank-category-note">${cat.note}</div>
-    ${ranked.map((club, i) => {
-      const ytLink = `https://www.youtube.com/results?search_query=${encodeURIComponent(club.name + ' golf course Sweden')}`;
-      const gmLink = `https://www.google.com/maps/search/${encodeURIComponent(club.name + ' golfklubb Sverige')}`;
-      let tags = '';
-      if (club.holes) tags += `<span class="tag tag-holes">⬡ ${club.holes} hål</span>`;
-      if (club.hasLunch) tags += `<span class="tag tag-lunch">🍽 Lunch</span>`;
-      if (club.stars) tags += `<span class="tag" style="background:rgba(251,191,36,0.12);color:#fbbf24">★ ${club.stars.toFixed(1)}</span>`;
-      return `
-        <div class="rank-item" data-id="${club.id}">
-          ${medalNum(i)}
-          <div class="rank-info">
-            <div class="rank-name">${club.name}</div>
-            <div class="rank-tags">${tags}</div>
-          </div>
-          <div class="rank-score">
-            <div class="rank-score-val">${cat.score(club)}</div>
-            <div class="rank-score-label">${cat.scoreLabel}</div>
-          </div>
-          <div class="rank-actions">
-            <a class="rank-btn rank-btn-yt" href="${ytLink}" target="_blank" rel="noopener">▶</a>
-            <a class="rank-btn rank-btn-gm" href="${gmLink}" target="_blank" rel="noopener">⭐</a>
-            <button class="rank-btn rank-btn-map" data-id="${club.id}">📍</button>
+  body.innerHTML = ranked.map((club, i) => {
+    const countryFlags = { SE: '🇸🇪', DK: '🇩🇰', ES: '🇪🇸' };
+    const countryFlag = countryFlags[club.country] || '';
+    const scoreDisplay = cat.score(club);
+    return `
+      <div class="rank-item" data-id="${club.id}">
+        <div class="rank-pos ${i < 3 ? 'rank-pos-' + (i + 1) : ''}">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}</div>
+        <div class="rank-info">
+          <div class="rank-name">${club.name}</div>
+          <div class="rank-meta">
+            ${club.holes ? `<span class="rank-meta-tag">${club.holes} holes</span>` : ''}
+            ${club.hasLunch ? `<span class="rank-meta-tag">🍽 Lunch</span>` : ''}
+            ${club.stars ? `<span class="rank-meta-tag">⭐ ${club.stars.toFixed(1)}</span>` : ''}
+            ${club.country ? `<span class="rank-meta-tag">${countryFlag}</span>` : ''}
           </div>
         </div>
-      `;
-    }).join('')}
-  `;
+        <div class="rank-score-box">
+          <div class="rank-score-val">${scoreDisplay}</div>
+          <div class="rank-score-label">${cat.scoreLabel || ''}</div>
+        </div>
+        <div class="rank-actions">
+          <button class="rank-action-btn" title="Show on map" data-lat="${club.lat}" data-lon="${club.lon}" data-id="${club.id}">📍</button>
+          <button class="rank-action-btn rank-save-btn" title="Save to trip" data-id="${club.id}">${savedTrips.includes(club.id) ? '❤️' : '🤍'}</button>
+        </div>
+      </div>
+    `;
+  }).join('');
 
-  // Fly to map on 📍 or row click
-  body.querySelectorAll('.rank-btn-map').forEach(btn => {
+  // Fly to map on pin button click
+  body.querySelectorAll('.rank-action-btn[data-lat]').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
       const club = allClubs.find(c => c.id == btn.dataset.id);
@@ -3801,6 +3763,17 @@ function renderRankingsBody() {
     });
   });
 
+  // Save to trip on heart button click
+  body.querySelectorAll('.rank-save-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const clubId = parseInt(btn.dataset.id) || btn.dataset.id;
+      toggleSaveTrip(clubId);
+      btn.textContent = savedTrips.includes(clubId) ? '❤️' : '🤍';
+    });
+  });
+
+  // Row click flies to map
   body.querySelectorAll('.rank-item').forEach(row => {
     row.addEventListener('click', e => {
       if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON') return;
@@ -3881,11 +3854,9 @@ function switchTab(target) {
   // Show target view
   if (target === 'courses') {
     coursesView.style.display = 'flex';
-    document.getElementById('search').placeholder = t('search_clubs');
     setTimeout(() => map.invalidateSize(), 50);
   } else if (target === 'live') {
     liveView.classList.add('active');
-    document.getElementById('search').placeholder = t('search_players');
     if (!chatInitialized) initChat();
     if (!mastersDataLoaded) fetchLeaderboard();
   } else if (target === 'news') {
@@ -3970,14 +3941,20 @@ function loadTournamentData(event) {
   const eventSlug = eventName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   if (chatInitialized) {
     const chatBody = document.getElementById('chat-body');
-    chatBody.innerHTML = `<iframe
-      src="https://tlk.io/golfrabbit-${eventSlug}"
-      style="flex:1;width:100%;border:none;background:#0a0a0a;border-radius:0;"
-      loading="lazy"
-    ></iframe>
-    <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:0.7rem;color:var(--text-tertiary);text-align:center;">
-      ${t('chat_footer')}
-    </div>`;
+    chatBody.innerHTML = `
+      <div style="padding:14px 16px;border-bottom:1px solid var(--border);text-align:center;">
+        <div style="font-size:1.3rem;margin-bottom:6px;">💬</div>
+        <div style="font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:4px;">Join the discussion!</div>
+        <div style="font-size:0.72rem;color:var(--text-tertiary);line-height:1.5;">Enter a nickname in the field below and start chatting with other golf fans.</div>
+      </div>
+      <iframe
+        src="https://tlk.io/golfrabbit-${eventSlug}"
+        style="flex:1;width:100%;border:none;background:#0a0a0a;border-radius:0;"
+        loading="lazy"
+      ></iframe>
+      <div style="padding:6px 12px;border-top:1px solid var(--border);font-size:0.68rem;color:var(--text-tertiary);text-align:center;">
+        ${t('chat_footer')}
+      </div>`;
   }
 
   // Parse competitors
@@ -4088,13 +4065,7 @@ document.getElementById('lb-search').addEventListener('input', function() {
   renderLeaderboard(this.value);
 });
 
-// Also allow main search to work on Masters tab
-const origSearchHandler = document.getElementById('search').oninput;
-document.getElementById('search').addEventListener('input', function() {
-  if (activeTab === 'live') {
-    renderLeaderboard(this.value);
-  }
-});
+// (header search Masters integration removed — leaderboard search uses #lb-search only)
 
 // ══════════════════════════════════════════════════════════════════════════════
 // ── CHAT WIDGET ───────────────────────────────────────────────────────────────
@@ -4105,14 +4076,21 @@ let chatInitialized = false;
 function initChat() {
   chatInitialized = true;
   const chatBody = document.getElementById('chat-body');
-  chatBody.innerHTML = `<iframe
-    src="https://tlk.io/golfrabbit-pga-tour"
-    style="flex:1;width:100%;border:none;background:#0a0a0a;border-radius:0;"
-    loading="lazy"
-  ></iframe>
-  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:0.7rem;color:var(--text-tertiary);text-align:center;">
-    ${t('chat_footer')}
-  </div>`;
+  const eventName = document.querySelector('.lb-title')?.textContent?.trim() || 'the tournament';
+  chatBody.innerHTML = `
+    <div style="padding:14px 16px;border-bottom:1px solid var(--border);text-align:center;">
+      <div style="font-size:1.3rem;margin-bottom:6px;">💬</div>
+      <div style="font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:4px;">Join the discussion!</div>
+      <div style="font-size:0.72rem;color:var(--text-tertiary);line-height:1.5;">Enter a nickname in the field below and start chatting with other golf fans.</div>
+    </div>
+    <iframe
+      src="https://tlk.io/golfrabbit-pga-tour"
+      style="flex:1;width:100%;border:none;background:#0a0a0a;border-radius:0;"
+      loading="lazy"
+    ></iframe>
+    <div style="padding:6px 12px;border-top:1px solid var(--border);font-size:0.68rem;color:var(--text-tertiary);text-align:center;">
+      ${t('chat_footer')}
+    </div>`;
 }
 
 // Tournament selector change handler
