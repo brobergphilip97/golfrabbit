@@ -19,7 +19,6 @@
       --text-tertiary: #48484a;
       --radius: 14px;
       --radius-sm: 8px;
-      --sidebar: 300px;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -34,6 +33,8 @@
       overflow: hidden;
       -webkit-font-smoothing: antialiased;
     }
+    body.tab-courses { overflow: hidden; }
+    body.tab-courses .main { overflow-y: auto; }
 
     /* ── HEADER ─────────────────────────────────────────────────────── */
     header {
@@ -149,24 +150,7 @@
       color: var(--accent);
     }
 
-    /* Filter toggle button with indicator dot */
-    #filter-toggle {
-      position: relative;
-    }
-    #filter-toggle .filter-dot {
-      display: none;
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--accent);
-      border: 1.5px solid rgba(8,8,8,0.9);
-    }
-    #filter-toggle.has-active .filter-dot {
-      display: block;
-    }
+    /* (filter toggle removed — filters now in sidebar) */
 
     /* Locate button icon-only */
     #locate-btn {
@@ -398,157 +382,8 @@
     .lang-btn:hover { opacity: 0.8; }
     .lang-btn.active { opacity: 1; border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); }
 
-    /* ── FILTER PANEL (Apple-style collapsible) ─────────────────────── */
-    #filter-panel {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      background: rgba(12,12,12,0.97);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border);
-      padding: 0;
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.3s cubic-bezier(.4,0,.2,1), padding 0.3s;
-      z-index: 999;
-    }
-    #filter-panel.open {
-      max-height: 300px;
-      padding: 16px 20px 20px;
-    }
-
-    .filter-panel-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-    .filter-panel-title {
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .filter-panel-clear {
-      background: none;
-      border: none;
-      color: var(--accent);
-      font-size: 0.75rem;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: inherit;
-      padding: 4px 8px;
-      border-radius: 6px;
-      transition: background 0.15s;
-      display: none;
-    }
-    .filter-panel-clear.visible { display: block; }
-    .filter-panel-clear:hover { background: var(--accent-dim); }
-
-    /* Segmented control style (Apple-like) */
-    .filter-group {
-      margin-bottom: 14px;
-    }
-    .filter-group:last-child { margin-bottom: 0; }
-    .filter-group-label {
-      font-size: 0.7rem;
-      color: var(--text-tertiary);
-      font-weight: 600;
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-    }
-    .segment-control {
-      display: inline-flex;
-      background: rgba(255,255,255,0.04);
-      border-radius: 10px;
-      padding: 3px;
-      gap: 2px;
-    }
-    .segment-btn {
-      background: none;
-      border: none;
-      color: var(--text-tertiary);
-      font-size: 0.78rem;
-      font-weight: 500;
-      padding: 6px 14px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-family: inherit;
-      transition: all 0.18s;
-      white-space: nowrap;
-    }
-    .segment-btn:hover { color: var(--text-secondary); }
-    .segment-btn.active {
-      background: var(--accent);
-      color: #000;
-      font-weight: 600;
-      box-shadow: 0 2px 8px rgba(52,211,153,0.25);
-    }
-
-    /* Toggle switches for Lunch/Rated */
-    .filter-toggles {
-      display: flex;
-      gap: 16px;
-      align-items: center;
-    }
-    .filter-toggle-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-    }
-    .filter-toggle-label {
-      font-size: 0.78rem;
-      color: var(--text-secondary);
-      font-weight: 500;
-    }
-    .toggle-switch {
-      width: 36px;
-      height: 20px;
-      background: rgba(255,255,255,0.1);
-      border-radius: 10px;
-      position: relative;
-      transition: background 0.2s;
-      cursor: pointer;
-      border: none;
-      padding: 0;
-    }
-    .toggle-switch.on {
-      background: var(--accent);
-    }
-    .toggle-switch::after {
-      content: '';
-      position: absolute;
-      width: 16px;
-      height: 16px;
-      background: white;
-      border-radius: 50%;
-      top: 2px;
-      left: 2px;
-      transition: transform 0.2s;
-    }
-    .toggle-switch.on::after {
-      transform: translateX(16px);
-    }
-
-    /* Results counter in filter panel */
-    .filter-results {
-      margin-top: 14px;
-      padding-top: 12px;
-      border-top: 1px solid var(--border);
-      font-size: 0.78rem;
-      color: var(--text-tertiary);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .filter-results strong {
-      color: var(--accent);
-      font-weight: 700;
-    }
+    /* (old filter panel CSS removed — filters now in sidebar) */
+    /* (old filter toggles and results counter removed) */
 
     /* ── WELCOME MODAL ────────────────────────────────────────────────── */
     #welcome-overlay {
@@ -805,189 +640,168 @@
     /* ── LAYOUT ──────────────────────────────────────────────────────── */
     .main {
       display: flex;
+      flex-direction: column;
       flex: 1;
-      overflow: hidden;
+      overflow-y: auto;
+      overflow-x: hidden;
       position: relative;
     }
 
-    /* ── SIDEBAR ─────────────────────────────────────────────────────── */
-    #sidebar {
-      width: var(--sidebar);
-      min-width: 0;
+    /* ── COURSES LAYOUT (filter sidebar + map + grid) ────────────────── */
+    #courses-layout {
+      display: flex;
+      height: 55vh;
+      min-height: 400px;
+      flex-shrink: 0;
+    }
+    #filter-sidebar {
+      width: 260px;
       flex-shrink: 0;
       background: rgba(10,10,10,0.95);
       border-right: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      transition: width 0.25s cubic-bezier(.4,0,.2,1);
-    }
-    #sidebar.collapsed {
-      width: 0 !important;
-      border-right: none;
-    }
-    #sidebar.collapsed > * {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    /* ── RESIZE HANDLE ───────────────────────────────────────────────── */
-    #sidebar-resize {
-      width: 5px;
-      cursor: col-resize;
-      background: transparent;
-      flex-shrink: 0;
-      position: relative;
-      z-index: 10;
-      transition: background 0.15s;
-    }
-    #sidebar-resize:hover,
-    #sidebar-resize.dragging {
-      background: var(--accent);
-    }
-    #sidebar-resize::after {
-      content: '';
-      position: absolute;
-      left: -4px;
-      right: -4px;
-      top: 0;
-      bottom: 0;
-    }
-
-    /* ── SIDEBAR TOGGLE ──────────────────────────────────────────────── */
-    #sidebar-toggle {
-      position: absolute;
-      left: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      z-index: 600;
-      width: 22px;
-      height: 56px;
-      background: rgba(10,10,10,0.92);
-      border: 1px solid var(--border);
-      border-left: none;
-      border-radius: 0 8px 8px 0;
-      color: var(--text-secondary);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      transition: all 0.2s;
-      backdrop-filter: blur(8px);
-    }
-    #sidebar-toggle:hover {
-      color: var(--text);
-      background: rgba(20,20,20,0.95);
-      border-color: rgba(255,255,255,0.15);
-    }
-    #sidebar.collapsed ~ #sidebar-resize { display: none; }
-
-    #sidebar-header {
-      padding: 14px 16px 12px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    #sidebar-title {
-      font-size: 0.72rem;
-      color: var(--text-tertiary);
-      letter-spacing: 0.3px;
-      text-transform: uppercase;
-      font-weight: 600;
-    }
-
-    #sidebar-count-line {
-      font-size: 0.8rem;
-      color: var(--text-secondary);
-      font-weight: 500;
-    }
-
-    #sidebar-count-line strong {
-      color: var(--text);
-      font-weight: 700;
-    }
-
-    #club-list {
-      flex: 1;
+      padding: 16px;
       overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
       scrollbar-width: thin;
       scrollbar-color: #222 transparent;
-      padding: 6px;
     }
-    #club-list::-webkit-scrollbar { width: 3px; }
-    #club-list::-webkit-scrollbar-thumb { background: #222; border-radius: 3px; }
-
-    /* ── CLUB CARD ───────────────────────────────────────────────────── */
-    .club-card {
-      padding: 12px 12px 10px;
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      transition: background 0.15s;
-      margin-bottom: 2px;
+    #filter-sidebar::-webkit-scrollbar { width: 3px; }
+    #filter-sidebar::-webkit-scrollbar-thumb { background: #222; border-radius: 3px; }
+    #map-container {
+      flex: 1;
       position: relative;
     }
-    .club-card:hover { background: var(--surface-hover); }
-    .club-card.active {
-      background: var(--accent-dim);
-      border: 1px solid rgba(52,211,153,0.2);
-    }
+    #map { width: 100%; height: 100%; }
 
-    .club-card-name {
-      font-size: 0.84rem;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 6px;
-      letter-spacing: -0.1px;
-      line-height: 1.3;
+    /* ── FILTER SIDEBAR COMPONENTS ────────────────────────────────────── */
+    .fs-section { display: flex; flex-direction: column; gap: 8px; }
+    .fs-label { font-size: 0.72rem; color: var(--text-tertiary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+    .fs-search {
+      width: 100%; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text); padding: 10px 12px;
+      font-size: 0.82rem; outline: none; font-family: inherit; box-sizing: border-box;
     }
+    .fs-search:focus { border-color: var(--accent); }
+    .fs-search::placeholder { color: var(--text-tertiary); }
+    .fs-options { display: flex; flex-direction: column; gap: 3px; }
+    .fs-btn {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text-secondary); padding: 8px 12px;
+      font-size: 0.8rem; font-weight: 500; cursor: pointer; font-family: inherit;
+      text-align: left; transition: all 0.15s;
+    }
+    .fs-btn:hover { border-color: rgba(255,255,255,0.15); color: var(--text); }
+    .fs-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+    .fs-toggle {
+      display: flex; align-items: center; gap: 10px; cursor: pointer;
+      font-size: 0.8rem; color: var(--text-secondary); padding: 6px 0;
+    }
+    .fs-toggle input { display: none; }
+    .fs-toggle-slider {
+      width: 34px; height: 18px; background: rgba(255,255,255,0.1);
+      border-radius: 9px; position: relative; transition: background 0.2s; flex-shrink: 0;
+    }
+    .fs-toggle-slider::after {
+      content: ''; position: absolute; width: 14px; height: 14px;
+      background: white; border-radius: 50%; top: 2px; left: 2px; transition: transform 0.2s;
+    }
+    .fs-toggle input:checked + .fs-toggle-slider { background: var(--accent); }
+    .fs-toggle input:checked + .fs-toggle-slider::after { transform: translateX(16px); }
+    .fs-clear {
+      background: none; border: 1px solid var(--border); border-radius: 8px;
+      color: var(--text-tertiary); padding: 8px; font-size: 0.78rem;
+      cursor: pointer; font-family: inherit; width: 100%; transition: all 0.15s;
+    }
+    .fs-clear:hover { border-color: var(--accent); color: var(--accent); }
 
-    .club-card-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
-      margin-bottom: 4px;
+    /* ── MOBILE FILTER TOGGLE BUTTON ─────────────────────────────────── */
+    #mobile-filter-toggle {
+      display: none;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text-secondary); padding: 8px 14px;
+      font-size: 0.78rem; font-weight: 600; cursor: pointer; font-family: inherit;
+      margin: 10px; align-self: flex-start; transition: all 0.15s;
     }
+    #mobile-filter-toggle:hover { border-color: var(--accent); color: var(--accent); }
 
-    .tag {
-      font-size: 0.68rem;
-      font-weight: 500;
-      padding: 2px 7px;
-      border-radius: 5px;
-      letter-spacing: 0.1px;
+    /* ── CLUB CARD GRID ──────────────────────────────────────────────── */
+    #clubs-grid-section {
+      padding: 20px;
+      border-top: 1px solid var(--border);
     }
-    .tag-holes { background: rgba(99,102,241,0.15); color: #a5b4fc; }
-    .tag-lunch { background: rgba(251,146,60,0.15); color: #fb923c; }
-    .tag-season-open { background: rgba(52,211,153,0.12); color: var(--accent); }
-    .tag-season-closed { background: rgba(255,255,255,0.05); color: var(--text-tertiary); }
-
-    .club-card-reviews {
-      font-size: 0.71rem;
-      color: var(--text-tertiary);
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      margin-bottom: 4px;
+    #clubs-grid-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 16px;
     }
-
-    .stars {
-      color: #f59e0b;
-      letter-spacing: -1px;
-      font-size: 0.7rem;
+    #clubs-grid-header h3 {
+      font-size: 0.85rem; color: var(--text-secondary); font-weight: 500;
     }
+    #clubs-grid-header h3 strong { color: var(--text); font-weight: 700; }
+    #sort-select {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); padding: 6px 10px;
+      font-size: 0.78rem; font-family: inherit; outline: none;
+    }
+    #clubs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 12px;
+    }
+    .grid-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .grid-card:hover {
+      border-color: rgba(255,255,255,0.15);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+    .grid-card-top {
+      display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;
+    }
+    .grid-card-name {
+      font-size: 0.92rem; font-weight: 600; color: var(--text); line-height: 1.3;
+    }
+    .grid-card-country { font-size: 0.75rem; color: var(--text-tertiary); margin-top: 2px; }
+    .grid-card-save {
+      background: none; border: none; font-size: 1.1rem; cursor: pointer;
+      color: var(--text-tertiary); transition: color 0.15s; flex-shrink: 0; padding: 0;
+    }
+    .grid-card-save.saved { color: #f87171; }
+    .grid-card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
+    .grid-card-tag {
+      font-size: 0.68rem; font-weight: 500; padding: 3px 8px;
+      border-radius: 6px; background: rgba(255,255,255,0.05); color: var(--text-secondary);
+    }
+    .grid-card-tag-type { background: rgba(52,211,153,0.1); color: var(--accent); }
+    .grid-card-tag-golfamore { background: rgba(251,191,36,0.15); color: #fbbf24; }
+    .grid-card-tag-lunch { background: rgba(251,146,60,0.12); color: #fb923c; }
+    .grid-card-actions {
+      display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap;
+    }
+    .grid-card-actions a {
+      font-size: 0.72rem; font-weight: 600; padding: 5px 10px;
+      border-radius: 7px; text-decoration: none; transition: all 0.15s; white-space: nowrap;
+    }
+    #clubs-load-more { text-align: center; }
+    #load-more-btn {
+      display: block; margin: 20px auto; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 10px; color: var(--text-secondary);
+      padding: 10px 30px; font-size: 0.82rem; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: all 0.15s;
+    }
+    #load-more-btn:hover { border-color: var(--accent); color: var(--accent); }
 
     /* ── CARD ACTION BUTTONS ─────────────────────────────────────────── */
-    .club-card-actions {
-      display: flex;
-      gap: 5px;
-      margin-top: 7px;
-    }
-
     .card-action-btn {
       border-radius: 7px;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 4px;
@@ -1030,16 +844,23 @@
     }
     .card-action-btn-gf:hover { background: rgba(52,211,153,0.18); border-color: rgba(52,211,153,0.3); }
 
-    #no-results {
-      padding: 32px 16px;
-      font-size: 0.82rem;
-      color: var(--text-tertiary);
-      text-align: center;
-      display: none;
+    .tag {
+      font-size: 0.68rem;
+      font-weight: 500;
+      padding: 2px 7px;
+      border-radius: 5px;
+      letter-spacing: 0.1px;
     }
+    .tag-holes { background: rgba(99,102,241,0.15); color: #a5b4fc; }
+    .tag-lunch { background: rgba(251,146,60,0.15); color: #fb923c; }
+    .tag-season-open { background: rgba(52,211,153,0.12); color: var(--accent); }
+    .tag-season-closed { background: rgba(255,255,255,0.05); color: var(--text-tertiary); }
 
-    /* ── MAP ─────────────────────────────────────────────────────────── */
-    #map { flex: 1; }
+    .stars {
+      color: #f59e0b;
+      letter-spacing: -1px;
+      font-size: 0.7rem;
+    }
 
     /* ── CLUSTERS ────────────────────────────────────────────────────── */
     .marker-cluster-small,
@@ -1518,40 +1339,6 @@
     /* ── COURSES VIEW CONTROLS ────────────────────────────────────────── */
     .karta-only { /* elements hidden on non-courses tabs */ }
     body.tab-live .karta-only { display: none !important; }
-    body.tab-live #filter-panel { max-height: 0 !important; padding: 0 !important; }
-    body.tab-live #mobile-view-toggle { display: none !important; }
-
-    /* ── MOBILE VIEW TOGGLE ──────────────────────────────────────────── */
-    #mobile-view-toggle {
-      display: none;
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 1100;
-      background: rgba(8,8,8,0.92);
-      backdrop-filter: blur(12px);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 4px;
-      gap: 2px;
-    }
-    #mobile-view-toggle button {
-      background: none;
-      border: none;
-      color: var(--text-secondary);
-      font-size: 0.78rem;
-      font-weight: 600;
-      padding: 8px 18px;
-      border-radius: 11px;
-      cursor: pointer;
-      font-family: inherit;
-      transition: all 0.18s;
-    }
-    #mobile-view-toggle button.active {
-      background: var(--accent-dim);
-      color: var(--accent);
-    }
 
     /* ══════════════════════════════════════════════════════════════════ */
     /* ── MOBILE RESPONSIVE (max-width: 768px) ─────────────────────── */
@@ -1590,57 +1377,20 @@
       #locate-btn svg { display: none; }
       #locate-btn { font-size: 0.7rem; }
 
-      /* ── FILTER PANEL (mobile) ─────────────────────── */
-      #filter-panel.open { padding: 12px 14px 14px; }
-      .segment-btn { font-size: 0.72rem; padding: 5px 10px; }
-      .filter-group-label { font-size: 0.65rem; }
-      .filter-toggle-label { font-size: 0.72rem; }
+      /* (old filter panel mobile removed — filters in sidebar now) */
 
-      /* ── MOBILE MAP/LIST LAYOUT ─────────────────────── */
-      .main {
-        flex-direction: column;
-        position: relative;
+      /* ── MOBILE COURSES LAYOUT ─────────────────────── */
+      #courses-layout { flex-direction: column; height: auto; }
+      #filter-sidebar {
+        width: 100%; height: auto; max-height: 0; overflow: hidden;
+        transition: max-height 0.3s; border-right: none; border-bottom: 1px solid var(--border);
+        padding: 0 16px;
       }
-
-      #sidebar {
-        width: 100% !important;
-        flex: 1;
-        border-right: none;
-        transition: none;
-        display: flex;
-      }
-      #sidebar.collapsed {
-        display: none !important;
-      }
-      #sidebar.mobile-hidden {
-        display: none !important;
-      }
-
-      #sidebar-resize { display: none !important; }
-      #sidebar-toggle { display: none !important; }
-
-      #map {
-        flex: 1;
-        width: 100%;
-        display: none !important;
-      }
-      #map.mobile-visible {
-        display: block !important;
-      }
-
-      /* Show the mobile toggle bar */
-      #mobile-view-toggle {
-        display: flex;
-      }
-
-      /* Sidebar compact cards */
-      .club-card { padding: 10px; }
-      .club-card-name { font-size: 0.9rem; }
-      .club-card-actions { gap: 4px; }
-      .card-action-btn { padding: 5px 8px; font-size: 0.72rem; }
-
-      #sidebar-header { padding: 12px; }
-      #club-list { padding: 4px; }
+      #filter-sidebar.mobile-open { max-height: 600px; padding: 14px 16px; }
+      #map-container { height: 50vh; min-height: 300px; }
+      #clubs-grid { grid-template-columns: 1fr; }
+      #clubs-grid-section { padding: 12px; }
+      #mobile-filter-toggle { display: block; }
 
       /* ── MASTERS MOBILE ─────────────────────────────── */
       .masters-layout {
@@ -1693,14 +1443,6 @@
     body.tab-news .karta-only,
     body.tab-shop .karta-only,
     body.tab-trips .karta-only { display: none !important; }
-    body.tab-live #filter-panel,
-    body.tab-news #filter-panel,
-    body.tab-shop #filter-panel,
-    body.tab-trips #filter-panel { max-height: 0 !important; padding: 0 !important; }
-    body.tab-live #mobile-view-toggle,
-    body.tab-news #mobile-view-toggle,
-    body.tab-shop #mobile-view-toggle,
-    body.tab-trips #mobile-view-toggle { display: none !important; }
     body.tab-live #search-wrap,
     body.tab-news #search-wrap,
     body.tab-shop #search-wrap,
@@ -1734,7 +1476,6 @@
       #mobile-bottom-nav { display: flex; justify-content: space-around; }
       .nav-tabs { display: none !important; }
       .main, #masters-view, #view-news, #view-shop, #view-trips { padding-bottom: 64px; }
-      #mobile-view-toggle { bottom: 74px !important; }
     }
     .bottom-tab {
       display: flex; flex-direction: column; align-items: center; gap: 2px;
@@ -2038,27 +1779,6 @@
     }
     .trip-map-btn:hover { background: rgba(52,211,153,0.2); }
 
-    /* ── SAVE/BOOKMARK BUTTON ON CLUB CARDS ──────────────────────────── */
-    .card-save-btn {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: rgba(0,0,0,0.5);
-      border: 1px solid var(--border);
-      border-radius: 50%;
-      width: 28px;
-      height: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 0.85rem;
-      transition: all 0.15s;
-      color: var(--text-tertiary);
-      z-index: 5;
-    }
-    .card-save-btn:hover { background: rgba(0,0,0,0.7); color: #f87171; }
-    .card-save-btn.saved { color: #f87171; }
     .card-action-btn-book {
       background: rgba(129,140,248,0.12);
       border-color: rgba(129,140,248,0.25);
@@ -2120,10 +1840,17 @@
 
     /* User menu dropdown */
     #user-menu { position: relative; flex-shrink: 0; }
-    #user-dropdown { display: none; position: absolute; top: 100%; right: 0; margin-top: 6px; background: #161616; border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 6px; min-width: 160px; z-index: 1200; box-shadow: 0 8px 30px rgba(0,0,0,0.6); }
+    #user-dropdown { display: none; position: absolute; top: 100%; right: 0; margin-top: 6px; background: #161616; border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 6px; min-width: 220px; z-index: 1200; box-shadow: 0 8px 30px rgba(0,0,0,0.6); }
     #user-dropdown.open { display: block; }
     .user-dropdown-item { display: block; width: 100%; background: none; border: none; color: var(--text-secondary); padding: 8px 12px; font-size: 0.8rem; text-align: left; cursor: pointer; border-radius: 6px; font-family: inherit; transition: all 0.15s; }
     .user-dropdown-item:hover { background: var(--surface-hover); color: var(--text); }
+    .user-profile-fields { padding: 8px 10px 6px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+    .profile-field { margin-bottom: 8px; }
+    .profile-field label { display: block; font-size: 0.68rem; color: var(--text-tertiary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 4px; }
+    .profile-field input { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; color: var(--text); padding: 6px 8px; font-size: 0.78rem; font-family: inherit; outline: none; box-sizing: border-box; }
+    .profile-field input:focus { border-color: var(--accent); }
+    #save-profile-btn { width: 100%; background: var(--accent-dim); border: 1px solid rgba(52,211,153,0.3); border-radius: 6px; color: var(--accent); padding: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; font-family: inherit; margin-bottom: 4px; transition: all 0.15s; }
+    #save-profile-btn:hover { background: rgba(52,211,153,0.2); }
 
     /* ── QUIZ OVERLAY ──────────────────────────────────────────────── */
     #quiz-overlay {
@@ -2211,7 +1938,7 @@
 
   </style>
 </head>
-<body>
+<body class="tab-courses">
 
 <!-- Welcome popup (always English) -->
 <div id="welcome-overlay">
@@ -2300,13 +2027,6 @@
 
   <div class="divider karta-only"></div>
 
-  <button id="filter-toggle" class="header-btn karta-only" data-i18n="filter">
-    ⚙ Filter
-    <span class="filter-dot"></span>
-  </button>
-
-  <div class="divider karta-only"></div>
-
   <button id="time-btn" class="time-btn-inactive karta-only" data-i18n="pick_time">
     🕐 Välj tid
   </button>
@@ -2343,55 +2063,24 @@
   <div id="user-menu">
     <button id="user-btn" class="header-btn" data-i18n="login">👤 Logga in</button>
     <div id="user-dropdown">
+      <div class="user-profile-fields" id="user-profile-section" style="display:none">
+        <div class="profile-field">
+          <label>Handicap</label>
+          <input type="number" id="user-hcp" placeholder="e.g. 18.4" step="0.1" />
+        </div>
+        <div class="profile-field">
+          <label>Home Club</label>
+          <input type="text" id="user-club" placeholder="e.g. Ullna GK" />
+        </div>
+        <button id="save-profile-btn">Save</button>
+      </div>
       <button class="user-dropdown-item" id="user-logout-btn">Logout</button>
     </div>
   </div>
 
   <div id="status" class="loading karta-only" data-i18n="loading">Laddar…</div>
 
-  <!-- Filter panel (Apple-style collapsible, inside header for absolute positioning) -->
-  <div id="filter-panel">
-    <div class="filter-panel-header">
-      <span class="filter-panel-title" data-i18n="filter_clubs">Filter clubs</span>
-      <button class="filter-panel-clear" id="clear-filters-btn" data-i18n="clear_filters">✕ Clear filters</button>
-    </div>
-    <div class="filter-group">
-      <div class="filter-group-label" data-i18n="country">Country</div>
-      <div class="segment-control" id="country-filters">
-        <button class="segment-btn active" data-country="all" data-i18n="all">All</button>
-        <button class="segment-btn" data-country="SE">🇸🇪 Sverige</button>
-        <button class="segment-btn" data-country="DK">🇩🇰 Danmark</button>
-        <button class="segment-btn" data-country="ES">🇪🇸 Spain</button>
-      </div>
-    </div>
-    <div class="filter-group">
-      <div class="filter-group-label" data-i18n="course_type">Course type</div>
-      <div class="segment-control" id="type-filters">
-        <button class="segment-btn active" data-type="all" data-i18n="all">All</button>
-        <button class="segment-btn" data-type="park" data-i18n="park">🌳 Park</button>
-        <button class="segment-btn" data-type="kust" data-i18n="coast">🌊 Coastal</button>
-        <button class="segment-btn" data-type="skog" data-i18n="forest">🌲 Forest</button>
-        <button class="segment-btn" data-type="links" data-i18n="links">🌾 Links</button>
-        <button class="segment-btn" data-type="berg" data-i18n="mountain">⛰ Mountain</button>
-      </div>
-    </div>
-    <div class="filter-group">
-      <div class="filter-toggles">
-        <div class="filter-toggle-item" id="lunch-toggle-wrap">
-          <button class="toggle-switch" id="lunch-toggle"></button>
-          <span class="filter-toggle-label" data-i18n="lunch">🍽 Lunch</span>
-        </div>
-        <div class="filter-toggle-item" id="rated-toggle-wrap">
-          <button class="toggle-switch" id="rated-toggle"></button>
-          <span class="filter-toggle-label" data-i18n="rated">⭐ Rated</span>
-        </div>
-      </div>
-    </div>
-    <div class="filter-results">
-      <span><strong id="filter-count">0</strong> <span data-i18n="clubs">clubs</span></span>
-      <span data-i18n="showing">Showing</span>
-    </div>
-  </div>
+
 </header>
 
 <!-- Rankings modal -->
@@ -2409,18 +2098,56 @@
   </div>
 </div>
 
-<div class="main">
-  <div id="sidebar">
-    <div id="sidebar-header">
-      <div id="sidebar-title" data-i18n="golf_clubs">Golfklubbar</div>
-      <div id="sidebar-count-line">Visar <strong><span id="count">0</span></strong> klubbar</div>
+<div class="main" id="view-courses">
+  <button id="mobile-filter-toggle">⚙ Filters</button>
+  <div id="courses-layout">
+    <div id="filter-sidebar">
+      <div class="fs-section">
+        <input id="search-sidebar" type="text" class="fs-search" placeholder="Search club..." data-i18n-placeholder="search_clubs" />
+      </div>
+      <div class="fs-section">
+        <div class="fs-label" data-i18n="country">Country</div>
+        <div class="fs-options" id="country-filters">
+          <button class="fs-btn active" data-country="all" data-i18n="all">All</button>
+          <button class="fs-btn" data-country="SE">🇸🇪 Sverige</button>
+          <button class="fs-btn" data-country="DK">🇩🇰 Danmark</button>
+          <button class="fs-btn" data-country="ES">🇪🇸 Spain</button>
+        </div>
+      </div>
+      <div class="fs-section">
+        <div class="fs-label" data-i18n="course_type">Course Type</div>
+        <div class="fs-options" id="type-filters">
+          <button class="fs-btn active" data-type="all" data-i18n="all">All</button>
+          <button class="fs-btn" data-type="park" data-i18n="park">🌳 Park</button>
+          <button class="fs-btn" data-type="kust" data-i18n="coast">🌊 Coastal</button>
+          <button class="fs-btn" data-type="skog" data-i18n="forest">🌲 Forest</button>
+          <button class="fs-btn" data-type="links" data-i18n="links">🌾 Links</button>
+          <button class="fs-btn" data-type="berg" data-i18n="mountain">⛰ Mountain</button>
+        </div>
+      </div>
+      <div class="fs-section">
+        <div class="fs-label">Features</div>
+        <label class="fs-toggle"><input type="checkbox" id="lunch-toggle" /><span class="fs-toggle-slider"></span> 🍽 Lunch</label>
+        <label class="fs-toggle"><input type="checkbox" id="rated-toggle" /><span class="fs-toggle-slider"></span> ⭐ Rated</label>
+        <label class="fs-toggle"><input type="checkbox" id="golfamore-toggle" /><span class="fs-toggle-slider"></span> 🏷 Golfamore</label>
+      </div>
+      <div class="fs-section">
+        <button id="clear-filters-btn" class="fs-clear" data-i18n="clear_filters">✕ Clear filters</button>
+      </div>
     </div>
-    <div id="club-list"></div>
-    <div id="no-results" data-i18n="no_match">Inga klubbar matchar</div>
+    <div id="map-container">
+      <div id="map"></div>
+    </div>
   </div>
-  <div id="sidebar-resize"></div>
-  <div id="map">
-    <div id="sidebar-toggle" title="Visa/dölj sidopanel">◀</div>
+  <div id="clubs-grid-section">
+    <div id="clubs-grid-header">
+      <h3>Showing <strong><span id="count">0</span></strong> clubs</h3>
+      <div id="clubs-sort">Sort by: <select id="sort-select"><option value="name">Name</option><option value="rating">Rating</option><option value="country">Country</option></select></div>
+    </div>
+    <div id="clubs-grid"></div>
+    <div id="clubs-load-more" style="display:none">
+      <button id="load-more-btn">Load more clubs</button>
+    </div>
   </div>
 </div>
 
@@ -2517,12 +2244,6 @@
     </div>
   </div>
   <div class="trips-list" id="trips-list"></div>
-</div>
-
-<!-- Mobile map/list toggle -->
-<div id="mobile-view-toggle">
-  <button class="active" data-view="list" data-i18n="list">📋 Lista</button>
-  <button data-view="map" data-i18n="map_view">🗺 Karta</button>
 </div>
 
 <!-- Mobile bottom nav -->
@@ -3080,9 +2801,43 @@ let activeCourseType = 'all';
 let activeCountry = 'all';
 let showLunchOnly = false;
 let showRatedOnly = false;
+let showGolfamoreOnly = false;
 let activeCard = null;
 let filterBarOpen = false;
 let savedTrips = JSON.parse(localStorage.getItem('golf_saved_trips') || '[]');
+
+// ── Golfamore participating clubs ─────────────────────────────────────────
+const golfamoreClubs = new Set([
+  'bro hof slott gc', 'ullna gk', 'hills gk', 'hooks golfklubb',
+  'ljunghusens gk', 'halmstad gk', 'falsterbo gk', 'båstad gk',
+  'örebro gk', 'sisjö gk', 'kungsbacka gk', 'göteborgs gk',
+  'stockholms gk', 'royal drottningholm gk', 'saltsjöbadens gk',
+  'visby gk', 'sand gk', 'torekov gk', 'mölle gk',
+  'landskrona gk', 'flommens gk', 'malmö burlöv gk', 'lunds akademiska gk',
+  'helsingborgs gk', 'ängelholms gk', 'kristianstads gk',
+  'karlstads gk', 'västerås gk', 'norrköpings gk', 'linköpings gk',
+  'jönköpings gk', 'växjö gk', 'kalmar gk', 'sundsvalls gk',
+  'umeå gk', 'luleå gk', 'gävle gk', 'borlänge gk',
+  'mora gk', 'östersunds gk', 'skellefteå gk',
+  'varbergs gk', 'falkenbergs gk', 'laholms gk',
+  'gripsholms gk', 'enköpings gk', 'strängnäs gk',
+  'nyköpings gk', 'eskilstuna gk', 'sala gk',
+  'lidingö gk', 'djursholms gk', 'täby gk', 'vallentuna gk',
+  'nacka gk', 'tyresö gk', 'haninge gk', 'södertälje gk',
+  'trollhättans gk', 'uddevalla gk', 'strömstads gk',
+  'marstrand gk', 'stenungsunds gk', 'ale gk',
+  'copenhagen golf club', 'rungsted gk', 'royal copenhagen gc',
+  'hillerød gk', 'helsingor gk', 'kokkedal gk',
+  'valderrama gc', 'la manga club', 'real club de golf sotogrande',
+]);
+
+function isGolfamoreClub(clubName) {
+  const lower = clubName.toLowerCase();
+  for (const name of golfamoreClubs) {
+    if (lower.includes(name) || name.includes(lower)) return true;
+  }
+  return false;
+}
 
 // ── Cache & fetch ──────────────────────────────────────────────────────────
 const CACHE_KEY = 'golf_multi_v1';
@@ -3309,16 +3064,26 @@ function buildPopup(club) {
 
 // ── Render ─────────────────────────────────────────────────────────────────
 function render() {
-  const q = document.getElementById('search').value.toLowerCase().trim();
+  // Sync both search inputs
+  const headerSearch = document.getElementById('search');
+  const sidebarSearch = document.getElementById('search-sidebar');
+  const q = (headerSearch.value || sidebarSearch.value || '').toLowerCase().trim();
 
-  const filtered = allClubs.filter(c => {
+  let filtered = allClubs.filter(c => {
     if (q && !c.name.toLowerCase().includes(q)) return false;
     if (activeCountry !== 'all' && c.country !== activeCountry) return false;
     if (showLunchOnly && !c.hasLunch) return false;
     if (showRatedOnly && !c.stars) return false;
+    if (showGolfamoreOnly && !isGolfamoreClub(c.name)) return false;
     if (activeCourseType !== 'all' && c.courseType !== activeCourseType) return false;
     return true;
   });
+
+  // Apply sort
+  const sortBy = document.getElementById('sort-select')?.value || 'name';
+  if (sortBy === 'name') filtered.sort((a, b) => a.name.localeCompare(b.name));
+  else if (sortBy === 'rating') filtered.sort((a, b) => (b.stars || 0) - (a.stars || 0));
+  else if (sortBy === 'country') filtered.sort((a, b) => (a.country || '').localeCompare(b.country || ''));
 
   clusterGroup.clearLayers();
   const markerArray = [];
@@ -3326,30 +3091,14 @@ function render() {
     const m = L.marker([club.lat, club.lon], { icon: pinIcon });
     m.on('click', () => {
       m.bindPopup(buildPopup(club), { maxWidth: 300 }).openPopup();
-      highlightCard(club.id);
     });
     markerArray.push(m);
     return { club, marker: m };
   });
   clusterGroup.addLayers(markerArray);
 
-  renderSidebar(filtered);
+  renderClubGrid(filtered);
   document.getElementById('count').textContent = filtered.length;
-  document.getElementById('sidebar-count-line').innerHTML = t('showing') + ' <strong><span id="count">' + filtered.length + '</span></strong> ' + t('clubs');
-  document.getElementById('no-results').style.display = filtered.length === 0 ? 'block' : 'none';
-
-  // Update filter indicator and button label
-  const activeCount = (activeCountry !== 'all' ? 1 : 0) + (activeCourseType !== 'all' ? 1 : 0) + (showLunchOnly ? 1 : 0) + (showRatedOnly ? 1 : 0);
-  const hasActiveFilters = activeCount > 0;
-  const ftBtn = document.getElementById('filter-toggle');
-  ftBtn.classList.toggle('has-active', hasActiveFilters);
-  ftBtn.innerHTML = hasActiveFilters
-    ? `⚙ ${t('filter')} <span style="color:var(--accent);font-weight:700">· ${activeCount}</span><span class="filter-dot"></span>`
-    : `⚙ ${t('filter')}<span class="filter-dot"></span>`;
-  document.getElementById('clear-filters-btn').classList.toggle('visible', hasActiveFilters);
-  // Update filter panel count
-  const filterCountEl = document.getElementById('filter-count');
-  if (filterCountEl) filterCountEl.textContent = filtered.length;
 }
 
 // ── Smart website URL generator for Swedish golf clubs ────────────────────
@@ -3403,154 +3152,159 @@ function getClubWebsite(club) {
   return guessClubWebsite(club.name);
 }
 
-const SIDEBAR_PAGE_SIZE = 50;
-let currentSidebarList = [];
-let sidebarRendered = 0;
+const GRID_PAGE_SIZE = 24;
+let gridRendered = 0;
+let currentFilteredList = [];
 
-function renderSidebar(list) {
-  const el = document.getElementById('club-list');
-  el.innerHTML = '';
-  currentSidebarList = list;
-  sidebarRendered = 0;
-  appendSidebarCards(SIDEBAR_PAGE_SIZE);
+function getBookingLink(club) {
+  if (club.country === 'SE') return `https://www.mingolf.se/Search?search=${encodeURIComponent(club.name)}`;
+  if (club.country === 'DK') return `https://www.golfbox.dk/portal/SearchCourse.aspx?search=${encodeURIComponent(club.name)}`;
+  return `https://www.google.com/search?q=${encodeURIComponent(club.name + ' book tee time')}`;
 }
 
-function appendSidebarCards(count) {
-  const el = document.getElementById('club-list');
-  const end = Math.min(sidebarRendered + count, currentSidebarList.length);
+function renderClubGrid(list) {
+  const grid = document.getElementById('clubs-grid');
+  grid.innerHTML = '';
+  currentFilteredList = list;
+  gridRendered = 0;
+  appendGridCards(GRID_PAGE_SIZE);
+  document.getElementById('count').textContent = list.length;
+  document.getElementById('clubs-load-more').style.display =
+    list.length > GRID_PAGE_SIZE ? 'block' : 'none';
+}
+
+function appendGridCards(count) {
+  const grid = document.getElementById('clubs-grid');
+  const end = Math.min(gridRendered + count, currentFilteredList.length);
   const fragment = document.createDocumentFragment();
 
-  for (let i = sidebarRendered; i < end; i++) {
-    const club = currentSidebarList[i];
-    const div = document.createElement('div');
-    div.className = 'club-card';
-    div.dataset.id = club.id;
+  for (let i = gridRendered; i < end; i++) {
+    const club = currentFilteredList[i];
+    const card = document.createElement('div');
+    card.className = 'grid-card';
+
+    const isSaved = savedTrips.includes(club.id);
+    const countryFlag = club.country === 'SE' ? '🇸🇪' : club.country === 'DK' ? '🇩🇰' : '🇪🇸';
+    const countryName = club.country === 'SE' ? 'Sweden' : club.country === 'DK' ? 'Denmark' : 'Spain';
+    const isGolfamore = isGolfamoreClub(club.name);
 
     let tags = '';
-    if (club.holes) tags += `<span class="tag tag-holes">⬡ ${club.holes} hål</span>`;
-    if (club.hasLunch) tags += `<span class="tag tag-lunch">${t('lunch')}</span>`;
-    tags += courseTypeTag(club);
-    if (club.greenfee) tags += `<span class="tag tag-gf-budget">💰 ${club.greenfee}</span>`;
-    tags += priceTag(club);
+    if (club.courseType && club.courseType !== 'unknown') tags += `<span class="grid-card-tag grid-card-tag-type">${courseTypeTag(club)}</span>`;
+    if (club.hasLunch) tags += `<span class="grid-card-tag grid-card-tag-lunch">🍽 Lunch</span>`;
+    if (isGolfamore) tags += `<span class="grid-card-tag grid-card-tag-golfamore">🏷 Golfamore -50%</span>`;
+    if (club.holes) tags += `<span class="grid-card-tag">${club.holes} holes</span>`;
+    if (club.stars) tags += `<span class="grid-card-tag">⭐ ${club.stars.toFixed(1)}</span>`;
 
-    const searchSuffix = club.country === 'ES' ? 'Spain' : club.country === 'DK' ? 'Denmark' : 'Sweden';
-    const ytLink = `https://www.youtube.com/results?search_query=${encodeURIComponent(club.name + ' golf course ' + searchSuffix)}`;
-    const gmLink = `https://www.google.com/maps/search/${encodeURIComponent(club.name + ' golf')}`;
-    const gfLink = `https://www.google.com/search?q=${encodeURIComponent(club.name + ' greenfee pris')}`;
     const webLink = getClubWebsite(club);
+    const bookLink = getBookingLink(club);
 
-    // Country-specific booking links
-    let bookLink;
-    if (club.country === 'SE') {
-      bookLink = `https://www.mingolf.se/Search?search=${encodeURIComponent(club.name)}`;
-    } else if (club.country === 'DK') {
-      bookLink = `https://www.golfbox.dk/portal/SearchCourse.aspx?search=${encodeURIComponent(club.name)}`;
-    } else if (club.country === 'ES') {
-      bookLink = `https://www.google.com/search?q=${encodeURIComponent(club.name + ' book tee time')}`;
-    } else {
-      bookLink = `https://www.google.com/search?q=${encodeURIComponent(club.name + ' book tee time')}`;
-    }
-    const hasOsmWebsite = club.website && club.website.startsWith('http');
-    const isSaved = savedTrips.includes(club.id);
-
-    let meta = '';
-    if (club.stars) meta = `<div class="club-card-reviews"><span class="stars">${renderStars(club.stars)}</span> ${club.stars.toFixed(1)}</div>`;
-
-    div.innerHTML = `
-      <button class="card-save-btn ${isSaved ? 'saved' : ''}" data-save-id="${club.id}" title="${t('save_trip')}">${isSaved ? '❤️' : '🤍'}</button>
-      <div class="club-card-name">${club.name}</div>
-      ${tags ? `<div class="club-card-tags">${tags}</div>` : ''}
-      ${meta}
-      <div class="club-card-actions">
-        <a class="card-action-btn card-action-btn-web" href="${webLink}" target="_blank" rel="noopener">${t('web')}</a>
-        <a class="card-action-btn card-action-btn-yt" href="${ytLink}" target="_blank" rel="noopener">${t('video')}</a>
-        <a class="card-action-btn card-action-btn-gm" href="${gmLink}" target="_blank" rel="noopener">${t('map_link')}</a>
-        <a class="card-action-btn card-action-btn-gf" href="${gfLink}" target="_blank" rel="noopener">${t('greenfee')}</a>
-        <a class="card-action-btn card-action-btn-book" href="${bookLink}" target="_blank" rel="noopener">${t('book')}</a>
-        ${hasOsmWebsite ? `<a class="card-action-btn card-action-btn-web-alt" href="${club.website}" target="_blank" rel="noopener">${t('club_site')}</a>` : ''}
+    card.innerHTML = `
+      <div class="grid-card-top">
+        <div>
+          <div class="grid-card-name">${club.name}</div>
+          <div class="grid-card-country">${countryFlag} ${countryName}</div>
+        </div>
+        <button class="grid-card-save ${isSaved ? 'saved' : ''}" data-id="${club.id}">
+          ${isSaved ? '❤️' : '🤍'}
+        </button>
+      </div>
+      ${tags ? `<div class="grid-card-tags">${tags}</div>` : ''}
+      <div class="grid-card-actions">
+        <a class="card-action-btn card-action-btn-web" href="${webLink}" target="_blank" rel="noopener">🌐 Web</a>
+        <a class="card-action-btn card-action-btn-book" href="${bookLink}" target="_blank" rel="noopener">📅 Book</a>
+        <a class="card-action-btn card-action-btn-gm" href="https://www.google.com/maps/search/${encodeURIComponent(club.name)}" target="_blank" rel="noopener">📍 Map</a>
       </div>
     `;
 
-    div.querySelectorAll('a').forEach(a => a.addEventListener('click', e => e.stopPropagation()));
-
-    // Save to trip button
-    const saveBtn = div.querySelector('.card-save-btn');
-    saveBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      toggleSaveTrip(club.id);
-      const nowSaved = savedTrips.includes(club.id);
-      saveBtn.classList.toggle('saved', nowSaved);
-      saveBtn.textContent = nowSaved ? '❤️' : '🤍';
-    });
-
-    div.addEventListener('click', () => {
+    // Click card to zoom map
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('a') || e.target.closest('.grid-card-save')) return;
       map.setView([club.lat, club.lon], 14);
       const entry = markers.find(m => m.club.id === club.id);
       if (entry) clusterGroup.zoomToShowLayer(entry.marker, () => entry.marker.openPopup());
-      highlightCard(club.id);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    fragment.appendChild(div);
+    // Save button
+    card.querySelector('.grid-card-save').addEventListener('click', () => {
+      toggleSaveTrip(club.id);
+      const nowSaved = savedTrips.includes(club.id);
+      card.querySelector('.grid-card-save').classList.toggle('saved', nowSaved);
+      card.querySelector('.grid-card-save').textContent = nowSaved ? '❤️' : '🤍';
+    });
+
+    // Stop link clicks from triggering card click
+    card.querySelectorAll('a').forEach(a => a.addEventListener('click', e => e.stopPropagation()));
+
+    fragment.appendChild(card);
   }
 
-  el.appendChild(fragment);
-  sidebarRendered = end;
+  grid.appendChild(fragment);
+  gridRendered = end;
+  document.getElementById('clubs-load-more').style.display =
+    gridRendered >= currentFilteredList.length ? 'none' : 'block';
 }
 
-// Infinite scroll — load more cards when user scrolls near bottom
-document.getElementById('club-list').addEventListener('scroll', function() {
-  if (sidebarRendered >= currentSidebarList.length) return;
-  if (this.scrollTop + this.clientHeight >= this.scrollHeight - 200) {
-    appendSidebarCards(SIDEBAR_PAGE_SIZE);
-  }
-});
+// Load more button
+document.getElementById('load-more-btn').addEventListener('click', () => appendGridCards(GRID_PAGE_SIZE));
 
-function highlightCard(id) {
-  if (activeCard) activeCard.classList.remove('active');
-  const el = document.querySelector(`.club-card[data-id="${id}"]`);
-  if (el) { el.classList.add('active'); el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); activeCard = el; }
-}
+// Sort handler
+document.getElementById('sort-select').addEventListener('change', () => render());
 
 // ── Controls ───────────────────────────────────────────────────────────────
 let searchDebounce = null;
+
+// Sync header search and sidebar search
 document.getElementById('search').addEventListener('input', function() {
+  document.getElementById('search-sidebar').value = this.value;
+  clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(render, 180);
+});
+document.getElementById('search-sidebar').addEventListener('input', function() {
+  document.getElementById('search').value = this.value;
   clearTimeout(searchDebounce);
   searchDebounce = setTimeout(render, 180);
 });
 
 document.getElementById('type-filters').addEventListener('click', e => {
-  const btn = e.target.closest('.segment-btn');
+  const btn = e.target.closest('.fs-btn');
   if (!btn) return;
-  document.querySelectorAll('#type-filters .segment-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#type-filters .fs-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   activeCourseType = btn.dataset.type;
   render();
-  if (window.innerWidth <= 768) closeFilterPanel();
 });
 
-document.getElementById('lunch-toggle-wrap').addEventListener('click', function() {
-  showLunchOnly = !showLunchOnly;
-  document.getElementById('lunch-toggle').classList.toggle('on', showLunchOnly);
+document.getElementById('lunch-toggle').addEventListener('change', function() {
+  showLunchOnly = this.checked;
   render();
-  if (window.innerWidth <= 768) closeFilterPanel();
 });
 
-document.getElementById('rated-toggle-wrap').addEventListener('click', function() {
-  showRatedOnly = !showRatedOnly;
-  document.getElementById('rated-toggle').classList.toggle('on', showRatedOnly);
+document.getElementById('rated-toggle').addEventListener('change', function() {
+  showRatedOnly = this.checked;
   render();
-  if (window.innerWidth <= 768) closeFilterPanel();
+});
+
+document.getElementById('golfamore-toggle').addEventListener('change', function() {
+  showGolfamoreOnly = this.checked;
+  render();
 });
 
 // Country filter
 document.getElementById('country-filters').addEventListener('click', e => {
-  const btn = e.target.closest('.segment-btn');
+  const btn = e.target.closest('.fs-btn');
   if (!btn) return;
-  document.querySelectorAll('#country-filters .segment-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#country-filters .fs-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   activeCountry = btn.dataset.country;
   render();
-  if (window.innerWidth <= 768) closeFilterPanel();
+});
+
+// Mobile filter toggle
+document.getElementById('mobile-filter-toggle').addEventListener('click', function() {
+  const sidebar = document.getElementById('filter-sidebar');
+  sidebar.classList.toggle('mobile-open');
+  this.textContent = sidebar.classList.contains('mobile-open') ? '✕ Close Filters' : '⚙ Filters';
 });
 
 // Save to trip helpers
@@ -3566,28 +3320,6 @@ function isSavedTrip(clubId) {
   return savedTrips.includes(clubId);
 }
 
-// ── Filter panel toggle ───────────────────────────────────────────────────
-function closeFilterPanel() {
-  filterBarOpen = false;
-  document.getElementById('filter-panel').classList.remove('open');
-  document.getElementById('filter-toggle').classList.remove('active');
-}
-document.getElementById('filter-toggle').addEventListener('click', function(e) {
-  e.stopPropagation();
-  filterBarOpen = !filterBarOpen;
-  this.classList.toggle('active', filterBarOpen);
-  document.getElementById('filter-panel').classList.toggle('open', filterBarOpen);
-});
-// Close filter panel when clicking outside
-document.addEventListener('click', function(e) {
-  if (!filterBarOpen) return;
-  const panel = document.getElementById('filter-panel');
-  const toggle = document.getElementById('filter-toggle');
-  if (!panel.contains(e.target) && !toggle.contains(e.target)) {
-    closeFilterPanel();
-  }
-});
-
 // ── Clear all filters ──────────────────────────────────────────────────────
 document.getElementById('clear-filters-btn').addEventListener('click', function() {
   activeHoles = 'all';
@@ -3595,60 +3327,18 @@ document.getElementById('clear-filters-btn').addEventListener('click', function(
   activeCountry = 'all';
   showLunchOnly = false;
   showRatedOnly = false;
-  document.querySelectorAll('#type-filters .segment-btn').forEach(b => b.classList.toggle('active', b.dataset.type === 'all'));
-  document.querySelectorAll('#country-filters .segment-btn').forEach(b => b.classList.toggle('active', b.dataset.country === 'all'));
-  document.getElementById('lunch-toggle').classList.remove('on');
-  document.getElementById('rated-toggle').classList.remove('on');
+  showGolfamoreOnly = false;
+  document.querySelectorAll('#type-filters .fs-btn').forEach(b => b.classList.toggle('active', b.dataset.type === 'all'));
+  document.querySelectorAll('#country-filters .fs-btn').forEach(b => b.classList.toggle('active', b.dataset.country === 'all'));
+  document.getElementById('lunch-toggle').checked = false;
+  document.getElementById('rated-toggle').checked = false;
+  document.getElementById('golfamore-toggle').checked = false;
+  document.getElementById('search-sidebar').value = '';
+  document.getElementById('search').value = '';
   render();
 });
 
-// ── Sidebar resize & collapse ─────────────────────────────────────────────
-(function() {
-  const sidebar = document.getElementById('sidebar');
-  const handle = document.getElementById('sidebar-resize');
-  const toggle = document.getElementById('sidebar-toggle');
-  let isDragging = false;
-  let lastWidth = 340;
-
-  // Widen default sidebar
-  sidebar.style.width = lastWidth + 'px';
-
-  handle.addEventListener('mousedown', function(e) {
-    e.preventDefault();
-    isDragging = true;
-    handle.classList.add('dragging');
-    document.body.style.cursor = 'col-resize';
-    document.body.style.userSelect = 'none';
-  });
-
-  document.addEventListener('mousemove', function(e) {
-    if (!isDragging) return;
-    const mainRect = document.querySelector('.main').getBoundingClientRect();
-    let newWidth = e.clientX - mainRect.left;
-    newWidth = Math.max(200, Math.min(newWidth, window.innerWidth * 0.6));
-    sidebar.style.width = newWidth + 'px';
-    sidebar.style.transition = 'none';
-    lastWidth = newWidth;
-    map.invalidateSize();
-  });
-
-  document.addEventListener('mouseup', function() {
-    if (!isDragging) return;
-    isDragging = false;
-    handle.classList.remove('dragging');
-    document.body.style.cursor = '';
-    document.body.style.userSelect = '';
-    sidebar.style.transition = '';
-    map.invalidateSize();
-  });
-
-  toggle.addEventListener('click', function() {
-    const isCollapsed = sidebar.classList.toggle('collapsed');
-    toggle.textContent = isCollapsed ? '▶' : '◀';
-    toggle.title = isCollapsed ? t('show_sidebar') : t('hide_sidebar');
-    setTimeout(() => map.invalidateSize(), 280);
-  });
-})();
+// (old sidebar resize & collapse removed — new layout uses fixed filter sidebar)
 
 document.getElementById('locate-btn').addEventListener('click', () => {
   if (!navigator.geolocation) return alert(t('geo_unsupported'));
@@ -4009,35 +3699,7 @@ function setStatus(t, c) {
   }
 })();
 
-// ══════════════════════════════════════════════════════════════════════════════
-// ── MOBILE VIEW TOGGLE ────────────────────────────────────────────────────────
-// ══════════════════════════════════════════════════════════════════════════════
-
-let mobileView = 'list'; // 'list' or 'map'
-
-document.getElementById('mobile-view-toggle').addEventListener('click', function(e) {
-  const btn = e.target.closest('button');
-  if (!btn) return;
-  const view = btn.dataset.view;
-  if (view === mobileView) return;
-  mobileView = view;
-
-  this.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-
-  const sidebar = document.getElementById('sidebar');
-  const mapEl = document.getElementById('map');
-  if (view === 'map') {
-    sidebar.classList.add('mobile-hidden');
-    mapEl.classList.add('mobile-visible');
-    setTimeout(() => map.invalidateSize(), 50);
-  } else {
-    sidebar.classList.remove('mobile-hidden');
-    mapEl.classList.remove('mobile-visible');
-  }
-});
-
-// Filter panel starts closed (already default), no extra action needed
+// (old mobile view toggle removed — new layout shows both map and grid)
 
 // ══════════════════════════════════════════════════════════════════════════════
 // ── TAB NAVIGATION ────────────────────────────────────────────────────────────
@@ -4059,7 +3721,7 @@ function switchTab(target) {
   document.body.classList.add('tab-' + target);
 
   // Hide all views
-  const coursesView = document.querySelector('.main');
+  const coursesView = document.getElementById('view-courses');
   const liveView = document.getElementById('masters-view');
   const newsView = document.getElementById('view-news');
   const shopView = document.getElementById('view-shop');
@@ -4762,6 +4424,42 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
   updateUserButton();
   if (currentUser) syncTripsFromSupabase();
 })();
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── USER PROFILE (Handicap & Home Club) ──────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+
+function loadProfile() {
+  const hcp = localStorage.getItem('golfrabbit_hcp') || '';
+  const club = localStorage.getItem('golfrabbit_club') || '';
+  document.getElementById('user-hcp').value = hcp;
+  document.getElementById('user-club').value = club;
+}
+
+function saveProfile() {
+  const hcp = document.getElementById('user-hcp').value;
+  const club = document.getElementById('user-club').value;
+  localStorage.setItem('golfrabbit_hcp', hcp);
+  localStorage.setItem('golfrabbit_club', club);
+  // Brief visual feedback
+  const btn = document.getElementById('save-profile-btn');
+  const orig = btn.textContent;
+  btn.textContent = '✓ Saved';
+  setTimeout(() => { btn.textContent = orig; }, 1500);
+}
+
+document.getElementById('save-profile-btn').addEventListener('click', saveProfile);
+
+// Show profile fields when logged in
+const origUpdateUserButton = updateUserButton;
+updateUserButton = function() {
+  origUpdateUserButton();
+  const profileSection = document.getElementById('user-profile-section');
+  if (profileSection) {
+    profileSection.style.display = currentUser ? 'block' : 'none';
+    if (currentUser) loadProfile();
+  }
+};
 
 </script>
 </body>
