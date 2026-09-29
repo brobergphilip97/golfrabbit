@@ -2886,7 +2886,7 @@ if (currentLang !== 'sv') {
 // ── Map ────────────────────────────────────────────────────────────────────
 const map = L.map('map', { center: [54, 12], zoom: 4, zoomControl: true });
 
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=cb1_4301_1_5f9578d0c666707ec391dbf9', {
   maxZoom: 19,
   attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>'
 }).addTo(map);
@@ -3012,15 +3012,20 @@ async function loadClubs() {
     'https://overpass.kumi.systems/api/interpreter',
     'https://maps.mail.ru/osm/tools/overpass/api/interpreter'
   ];
-  let json = null;
-  for (const mirror of mirrors) {
-    try {
-      const res = await fetch(mirror, { method: 'POST', body: 'data=' + encodeURIComponent(q) });
-      const text = await res.text();
-      if (text.trim().startsWith('<')) continue; // XML error response, try next
-      json = JSON.parse(text);
-      break;
-    } catch(e) { continue; }
+let json = null;
+  for (let attempt = 0; attempt < 2 && !json; attempt++) {
+    for (const mirror of mirrors) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 20000);
+      try {
+        const res = await fetch(mirror, { method: 'POST', body: 'data=' + encodeURIComponent(q), signal: controller.signal });
+        if (!res.ok) continue;
+        const text = await res.text();
+        if (text.trim().startsWith('<')) continue;
+        json = JSON.parse(text);
+        break;
+      } catch(e) { continue; } finally { clearTimeout(timer); }
+    }
   }
   if (!json) {
     // Fallback: try old Swedish-only cache
